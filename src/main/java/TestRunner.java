@@ -1,0 +1,33 @@
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+
+/**
+ * Created by robin on 21/06/15.
+ */
+public class TestRunner {
+    public void run() throws Exception {
+        // List files
+        URL url = this.getClass().getClassLoader().getResource("testdata");
+        File folder = new File(url.toURI());
+        File[] listOfFiles = folder.listFiles();
+        ArrayList<String> testDataFiles = new ArrayList<String>();
+        for (File f : listOfFiles) {
+            if (!f.isFile()) {
+                continue;
+            }
+            String p = f.getAbsolutePath();
+            if (!p.endsWith(".tsv")) {
+                continue;
+            }
+            testDataFiles.add(p);
+        }
+
+        // Load
+        AbstractDataLoader dl;
+        for (String p : testDataFiles) {
+            dl = new FileDataLoader(p);
+            dl.load();
+        }
+    }
+}
