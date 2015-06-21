@@ -44,12 +44,18 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers) {
         outliers.clear();
+        int activeAnalyzers = 0;
         for (ITimeserieAnalyzer analyzer : analyzers) {
             List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(this, timeseries);
             if (analyzerOutliers == null) {
+                // Not active
                 continue;
             }
+            activeAnalyzers++;
             outliers.addAll(analyzerOutliers);
+        }
+        if (activeAnalyzers < 1) {
+            log(LOG_ERROR, "No analyzers were taken into account");
         }
         return outliers;
     }
