@@ -1,3 +1,5 @@
+import com.sun.javafx.tools.resource.DeployResource;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,7 +9,7 @@ import java.util.Map;
  * Created by robin on 21/06/15.
  */
 public class SimpleAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
-    public List<TimeserieOutlier> analyze(HashMap<String, Timeseries> timeseries) {
+    public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
             // Average
@@ -18,7 +20,7 @@ public class SimpleAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
                 count++;
             }
             double avg = total / (double)count;
-            log("Average = " + avg);
+            dataLoader.log(dataLoader.LOG_DEBUG, "Average = " + avg);
 
             // Stddev
             double msqT = 0.0D;
@@ -28,7 +30,13 @@ public class SimpleAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
             }
             double msqAvg = msqT / (double)count;
             double stdDev = Math.sqrt(msqAvg);
-            log("Stddev = " + stdDev);
+            dataLoader.log(dataLoader.LOG_DEBUG, "Stddev = " + stdDev);
+
+            // Is this filter reliable?
+            if (stdDev > 1.0 * avg) {
+                dataLoader.log(dataLoader.LOG_INFO, getClass().getSimpleName() + " is unreliable based on standard deviation average crosscheck");
+                return null;
+            }
 
             // Detect outliers
             double maxStdDevMp = 1.0D;

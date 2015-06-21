@@ -15,6 +15,8 @@ import java.util.List;
 public class FileDataLoader extends AbstractDataLoader {
     public FileDataLoader(String path) {
         setConfig("path", path);
+        String[] pSplit = path.split("/");
+        setConfig("name", pSplit[pSplit.length - 1]);
     }
 
     public ArrayList<Long> loadExpectedErrors() {

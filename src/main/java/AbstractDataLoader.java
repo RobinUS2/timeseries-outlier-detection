@@ -1,4 +1,5 @@
 import com.sun.org.apache.xalan.internal.lib.ExsltDatetime;
+import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 
 import java.util.*;
 
@@ -10,9 +11,9 @@ public abstract class AbstractDataLoader implements IDataLoader {
     private HashMap<String, Timeseries> timeseries;
     private List<Long> expectedErrors;
     private List<TimeserieOutlier> outliers;
-    private final int LOG_ERROR = 1;
-    private final int LOG_INFO = 2;
-    private final int LOG_DEBUG = 3;
+    public final int LOG_ERROR = 1;
+    public final int LOG_INFO = 2;
+    public final int LOG_DEBUG = 3;
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -22,6 +23,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     }
 
     public void log(int type, String msg) {
+        msg = "[" + getConfig("name", "") + "] " + msg;
         switch(type) {
             case LOG_ERROR:
                 System.err.println(msg);
@@ -43,7 +45,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers) {
         outliers.clear();
         for (ITimeserieAnalyzer analyzer : analyzers) {
-            List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(timeseries);
+            List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(this, timeseries);
             if (analyzerOutliers == null) {
                 continue;
             }
@@ -111,7 +113,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     // Validate
     public void validate() {
         if (outliers.size() != expectedErrors.size()) {
-            log(LOG_ERROR, "Outlier count does not match expected errors");
+            log(LOG_ERROR, "Outlier count (" + outliers.size() + ") does not match expected errors (" + expectedErrors.size() + ")");
         }
 
         // Did we find the expected ones?
@@ -144,15 +146,15 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public void load() throws Exception {
         // Load raw
         HashMap<String, HashMap<String, String>> raw = loadRawData();
-        //System.out.println(raw);
+        log(LOG_DEBUG, raw.toString());
 
         // Process
         processData(raw);
-        System.out.println(timeseries);
+        log(LOG_DEBUG, timeseries.toString());
 
         // Load expected errors
         expectedErrors = loadExpectedErrors();
-        //System.out.println(expectedErrors);
+        log(LOG_DEBUG, expectedErrors.toString());
     }
 
 }
