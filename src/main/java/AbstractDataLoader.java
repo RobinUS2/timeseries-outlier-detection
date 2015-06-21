@@ -8,10 +8,12 @@ import java.util.*;
 public abstract class AbstractDataLoader implements IDataLoader {
     private HashMap<String, String> settings;
     private HashMap<String, Timeseries> timeseries;
+    private List<Long> expectedErrors;
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
         timeseries = new HashMap<String, Timeseries>();
+        expectedErrors = new ArrayList<Long>();
     }
 
     public void setConfig(String k, String v) {
@@ -76,15 +78,15 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public void load() throws Exception {
         // Load raw
         HashMap<String, HashMap<String, String>> raw = loadRawData();
-        System.out.println(raw);
+        //System.out.println(raw);
 
         // Process
         processData(raw);
         System.out.println(timeseries);
 
         // Load expected errors
-        List<Long> expectedErrors = loadExpectedErrors();
-        System.out.println(expectedErrors);
+        expectedErrors = loadExpectedErrors();
+        //System.out.println(expectedErrors);
     }
 
 }
