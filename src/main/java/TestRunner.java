@@ -34,6 +34,7 @@ public class TestRunner {
             dl = new FileDataLoader(p);
             dl.load();
             dl.analyze(analyzers);
+            dl.validate();
         }
     }
 }

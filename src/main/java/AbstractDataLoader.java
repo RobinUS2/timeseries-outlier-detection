@@ -9,12 +9,28 @@ public abstract class AbstractDataLoader implements IDataLoader {
     private HashMap<String, String> settings;
     private HashMap<String, Timeseries> timeseries;
     private List<Long> expectedErrors;
+    private List<TimeserieOutlier> outliers;
+    private final int LOG_ERROR = 1;
+    private final int LOG_INFO = 2;
+    private final int LOG_DEBUG = 3;
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
         timeseries = new HashMap<String, Timeseries>();
         expectedErrors = new ArrayList<Long>();
+        outliers = new ArrayList<TimeserieOutlier>();
     }
+
+    public void log(int type, String msg) {
+        switch(type) {
+            case LOG_ERROR:
+                System.err.println(msg);
+                break;
+            default:
+                System.out.println(msg);
+        }
+    }
+
 
     public void setConfig(String k, String v) {
         settings.put(k, v);
@@ -25,7 +41,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     }
 
     public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers) {
-        List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
+        outliers.clear();
         for (ITimeserieAnalyzer analyzer : analyzers) {
             List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(timeseries);
             if (analyzerOutliers == null) {
@@ -91,6 +107,38 @@ public abstract class AbstractDataLoader implements IDataLoader {
             timeseries.put(serieName, timeserie);
         }
     }
+
+    // Validate
+    public void validate() {
+        if (outliers.size() != expectedErrors.size()) {
+            log(LOG_ERROR, "Outlier count does not match expected errors");
+        }
+
+        // Did we find the expected ones?
+        for (Long expectedErr : expectedErrors) {
+            boolean found = false;
+            for (TimeserieOutlier o : outliers) {
+                if (expectedErr == o.getTs()) {
+                    // Found expected
+                    found = true;
+                    break;
+                }
+            }
+
+            // Not found?
+            if (!found) {
+                log(LOG_ERROR, "Did not find error on " + expectedErr);
+            }
+        }
+
+        // False positives?
+        for (TimeserieOutlier o : outliers) {
+            if (!expectedErrors.contains(o.getTs())) {
+                log(LOG_ERROR, "Found false positive at " + o.getTs());
+            }
+        }
+    }
+
 
     // Load data
     public void load() throws Exception {
