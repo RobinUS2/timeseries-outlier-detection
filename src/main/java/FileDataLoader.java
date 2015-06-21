@@ -1,6 +1,11 @@
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,6 +16,29 @@ public class FileDataLoader extends AbstractDataLoader {
     public FileDataLoader(String path) {
         setConfig("path", path);
     }
+
+    public ArrayList<Long> loadExpectedErrors() {
+        ArrayList<Long> list = new ArrayList<Long>();
+        try {
+            String p = getConfig("path", null) + ".errors";
+            if (!new File(p).isFile()) {
+                return list;
+            }
+            String json = FileUtils.readFileToString(new File(p));
+            JsonParser jp = new JsonParser();
+            JsonObject obj = jp.parse(json).getAsJsonObject();
+            JsonArray errors = obj.getAsJsonArray("errors");
+            for (JsonElement errElm : errors) {
+                list.add(errElm.getAsLong());
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+
     public HashMap<String, HashMap<String, String>> loadRawData() throws Exception {
         // Series holders
         HashMap<String, HashMap<String, String>> series = new HashMap<String, HashMap<String, String>>();

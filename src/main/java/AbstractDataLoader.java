@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by robin on 21/06/15.
@@ -20,7 +21,9 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     public void load() throws Exception {
         HashMap<String, HashMap<String, String>> raw = loadRawData();
+        List<Long> expectedErrors = loadExpectedErrors();
         System.out.println(raw);
+        System.out.println(expectedErrors);
     }
 
 }
