@@ -16,4 +16,8 @@ public class Timeseries {
     public String toString() {
         return data.toString();
     }
+
+    public TreeMap<Long, Double> getData() {
+        return data;
+    }
 }

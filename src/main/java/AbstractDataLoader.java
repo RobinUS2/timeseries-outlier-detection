@@ -24,6 +24,18 @@ public abstract class AbstractDataLoader implements IDataLoader {
         return settings.getOrDefault(k, d);
     }
 
+    public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers) {
+        List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
+        for (ITimeserieAnalyzer analyzer : analyzers) {
+            List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(timeseries);
+            if (analyzerOutliers == null) {
+                continue;
+            }
+            outliers.addAll(analyzerOutliers);
+        }
+        return outliers;
+    }
+
     // Convert it to a sorted TS (long) Value (double) set, fills gaps with 0's
     protected void processData(HashMap<String, HashMap<String, String>> raw) {
         for (Map.Entry<String, HashMap<String, String>> kv : raw.entrySet()) {
@@ -67,7 +79,13 @@ public abstract class AbstractDataLoader implements IDataLoader {
                 sortedMap.put(kvFill.getKey(), kvFill.getValue());
             }
 
+            // Put in timeserie
             timeserie.setData(sortedMap);
+
+            // Skip empty datasets
+            if (timeserie.getData().size() == 0) {
+                continue;
+            }
 
             // Store result
             timeseries.put(serieName, timeserie);
