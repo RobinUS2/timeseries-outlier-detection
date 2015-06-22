@@ -20,6 +20,7 @@ public class IntervalInterceptorModel {
     private double stdDev;
     private int dataCount;
     private long tsDelta;
+    private SimpleRegression nonPatternRegression;
     private ArrayList<IntervalPattern> intervalPatterns;
 
     public IntervalInterceptorModel() {
@@ -252,6 +253,18 @@ public class IntervalInterceptorModel {
             }
         }
 
+        // Train regression for non-pattern datapoints
+        nonPatternRegression = new SimpleRegression();
+        outer : for (Map.Entry<Long, Double> kv : data.entrySet()) {
+            for (IntervalPattern ip : intervalPatterns) {
+                if (ip.getDataPoints().containsKey(kv.getKey())) {
+                    // Part of a pattern, skip
+                    continue outer;
+                }
+            }
+            nonPatternRegression.addData((double)kv.getKey(), kv.getValue());
+        }
+
         // Done
         isTrained = true;
     }
@@ -286,9 +299,9 @@ public class IntervalInterceptorModel {
             }
         }
 
-        // Unable to forecast, not a peak / no peaks detected
-        // @todo return value from simple regression without all the peaks
-        return Double.NaN;
+        // Unable to forecast, not a peak / no peaks detected, return value from simple regression without all the peaks
+        debug("low regression");
+        return nonPatternRegression.predict((double)ts);
     }
 
     private class IntervalPattern {
@@ -296,20 +309,24 @@ public class IntervalInterceptorModel {
         private final int interval;
         private final long lastIntervalEndTs;
         private final TreeMap<Long, Double> dataPoints;
-        private SimpleRegression regression;
+        private SimpleRegression peakRegression;
         private IntervalPattern(int length, int interval, TreeMap<Long, Double> dps, long lastIntervalEndTs) {
             this.length = length;
             this.interval = interval;
             this.lastIntervalEndTs = lastIntervalEndTs;
             this.dataPoints = dps;
-            regression = new SimpleRegression();
+            peakRegression = new SimpleRegression();
             train();
         }
 
         private final void train() {
             for (Map.Entry<Long, Double> kv : dataPoints.entrySet()) {
-                regression.addData((double) kv.getKey(), kv.getValue());
+                peakRegression.addData((double) kv.getKey(), kv.getValue());
             }
+        }
+
+        public TreeMap<Long, Double> getDataPoints() {
+            return dataPoints;
         }
 
         public double predict(long ts) {
@@ -322,7 +339,8 @@ public class IntervalInterceptorModel {
             debug(patternLength + " patternLength");
             debug(patternsMatched + " patternsMatched");
             if (normalizedTsinceLastOccurence >= interval && normalizedTsinceLastOccurence <= patternLength) {
-                return regression.predict((double)ts);
+                debug("in peak");
+                return peakRegression.predict((double)ts);
             }
             return Double.NaN;
         }
