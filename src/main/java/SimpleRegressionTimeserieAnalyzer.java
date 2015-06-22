@@ -47,7 +47,7 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
                 double val = tskv.getValue();
                 double expectedVal = r.predict(ts);
                 double dif = expectedVal / val;
-                //dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal + " (dif " + dif + ")");
+                dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal + " (dif " + dif + ")");
                 if (Math.abs(dif) < 1 - maxRelDif || Math.abs(dif) > 1 + maxRelDif) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), -1, -1);
                     outliers.add(outlier);

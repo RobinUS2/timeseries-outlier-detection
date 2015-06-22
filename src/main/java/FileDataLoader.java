@@ -59,7 +59,7 @@ public class FileDataLoader extends AbstractDataLoader {
         long i = 0L;
         for (String line : lines) {
             // Split
-            String[] cols = line.split("\\s+");
+            String[] cols = line.trim().split("\\s+");
 
             // Mapping of series
             if (i == 0L) {

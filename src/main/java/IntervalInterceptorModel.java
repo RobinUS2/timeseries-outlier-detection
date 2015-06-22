@@ -98,6 +98,7 @@ public class IntervalInterceptorModel {
 
         // Scan intervals
         double scanValue = maxValue;
+        double maxScanValue = Double.MAX_VALUE;
         int maxIterations = 10000;
         double scanStep = (maxValue - minValue) / maxIterations;
         debug("Scan step size " + scanStep);
@@ -108,6 +109,11 @@ public class IntervalInterceptorModel {
             for (Map.Entry<Long, Double> kv: data.entrySet()) {
                 // Ignore below scan value
                 if (kv.getValue() < scanValue) {
+                    continue;
+                }
+
+                // Ignore above max scan value, a boundary set by the last found interval
+                if (kv.getValue() >= maxScanValue) {
                     continue;
                 }
 
@@ -239,12 +245,13 @@ public class IntervalInterceptorModel {
 
             // Skip forward in scanStep to below the lowest value of the current pairs
             double minValFound = Double.MAX_VALUE;
-            for (double val : data.values()) {
+            for (double val : foundPairs.values()) {
                 if (val < minValFound) {
                     minValFound = val;
                 }
             }
             scanValue = minValFound - scanStep;
+            maxScanValue = minValFound;
             debug("Forward scanValue to " + scanValue);
 
             // Done?
@@ -292,6 +299,7 @@ public class IntervalInterceptorModel {
         }
 
         // Iterate patterns
+        debug(intervalPatterns.size() + "");
         for (IntervalPattern ip : intervalPatterns) {
             double prediction = ip.predict(ts);
             if (!Double.isNaN(prediction)) {

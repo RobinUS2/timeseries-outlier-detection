@@ -21,6 +21,10 @@ public class TestRunner {
             if (!p.endsWith(".tsv")) {
                 continue;
             }
+            // Testing only
+//            if (!p.contains("intervals_multi_no_noise_with_errors")) {
+//                continue;
+//            }
             testDataFiles.add(p);
         }
 
