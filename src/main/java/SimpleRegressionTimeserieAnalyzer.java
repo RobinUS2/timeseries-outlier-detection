@@ -31,7 +31,7 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope confidence interval = " + r.getSlopeConfidenceInterval());
 
             // Predict
-            double maxRelDif = 0.1; // @todo dynamic
+            double maxRelDif = 0.2; // @todo dynamic
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
