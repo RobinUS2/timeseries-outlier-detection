@@ -12,8 +12,10 @@ public abstract class AbstractDataLoader implements IDataLoader {
     private List<Long> expectedErrors;
     private List<TimeserieOutlier> outliers;
     public final int LOG_ERROR = 1;
-    public final int LOG_INFO = 2;
-    public final int LOG_DEBUG = 3;
+    public final int LOG_WARN = 2;
+    public final int LOG_NOTICE = 3;
+    public final int LOG_INFO = 4;
+    public final int LOG_DEBUG = 5;
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -22,10 +24,11 @@ public abstract class AbstractDataLoader implements IDataLoader {
         outliers = new ArrayList<TimeserieOutlier>();
     }
 
-    public void log(int type, String msg) {
-        msg = "[" + getConfig("name", "") + "] " + msg;
+    public void log(int type, String className, String msg) {
+        msg = "[" + getConfig("name", "") + "] [" + className + "] " + msg;
         switch(type) {
             case LOG_ERROR:
+            case LOG_WARN:
                 System.err.println(msg);
                 break;
             default:
@@ -55,7 +58,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
             outliers.addAll(analyzerOutliers);
         }
         if (activeAnalyzers < 1) {
-            log(LOG_ERROR, "No analyzers were taken into account");
+            log(LOG_ERROR, getClass().getSimpleName(), "No analyzers were taken into account");
         }
         return outliers;
     }
@@ -118,10 +121,6 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     // Validate
     public void validate() {
-        if (outliers.size() != expectedErrors.size()) {
-            log(LOG_ERROR, "Outlier count (" + outliers.size() + ") does not match expected errors (" + expectedErrors.size() + ")");
-        }
-
         // Did we find the expected ones?
         for (Long expectedErr : expectedErrors) {
             boolean found = false;
@@ -135,14 +134,14 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
             // Not found?
             if (!found) {
-                log(LOG_ERROR, "Did not find error on " + expectedErr);
+                log(LOG_ERROR, getClass().getSimpleName(), "Did not find error on " + expectedErr);
             }
         }
 
         // False positives?
         for (TimeserieOutlier o : outliers) {
             if (!expectedErrors.contains(o.getTs())) {
-                log(LOG_ERROR, "Found false positive at " + o.getTs());
+                log(LOG_ERROR, getClass().getSimpleName(), "Found false positive at " + o.getTs() + " triggered by " + o.getAnalyzerName());
             }
         }
     }
@@ -152,15 +151,15 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public void load() throws Exception {
         // Load raw
         HashMap<String, HashMap<String, String>> raw = loadRawData();
-        log(LOG_DEBUG, raw.toString());
+        log(LOG_DEBUG, getClass().getSimpleName(), raw.toString());
 
         // Process
         processData(raw);
-        log(LOG_DEBUG, timeseries.toString());
+        log(LOG_DEBUG, getClass().getSimpleName(), timeseries.toString());
 
         // Load expected errors
         expectedErrors = loadExpectedErrors();
-        log(LOG_DEBUG, expectedErrors.toString());
+        log(LOG_DEBUG, getClass().getSimpleName(), expectedErrors.toString());
     }
 
 }
