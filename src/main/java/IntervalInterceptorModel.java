@@ -92,7 +92,7 @@ public class IntervalInterceptorModel {
         int maxIterations = 10000;
         double scanStep = (maxValue - minValue) / maxIterations;
         debug("Scan step size " + scanStep);
-        HashMap<Long, Double> foundPairs = new HashMap<Long, Double>();
+        TreeMap<Long, Double> foundPairs = new TreeMap<Long, Double>();
         for (int i = 0; i <maxIterations; i++) {
             scanValue -= scanStep;
             foundPairs.clear();
@@ -110,7 +110,7 @@ public class IntervalInterceptorModel {
             }
 
             // Can not be majority of datapoints
-            if (foundPairCount >= (double)dataCount * 0.3) {
+            if (foundPairCount >= (double)dataCount * 0.9) {
                 continue;
             }
 
@@ -118,7 +118,7 @@ public class IntervalInterceptorModel {
             debug("Pairs above scan value of " + scanValue + ": " + foundPairs.toString());
 
             // Regular intervals?
-            long previousTs = -1L;
+            long previousTs = foundPairs.firstKey() - tsDelta;
             long previousTsDelta = -1L;
             boolean regularIntervals = true;
             long intervalStartTs = -1L; // Start timestamp
@@ -131,21 +131,41 @@ public class IntervalInterceptorModel {
                     debug("ts delta " + nowDelta);
 
                     // Is the previous peak 1 step away, in that case this is a interval spanning multiple points
+                    boolean endOfChain = false;
                     if (nowDelta == tsDelta) {
                         debug("chained to prev delta");
-                        // @todo finish
-                    }
+                    } else {
+                        if (intervalStartTs > -1L) {
+                            debug("end of chain, started at " + intervalStartTs + " length " + intervalLength);
+                            endOfChain = true;
 
-
-                    if (previousTsDelta > -1L) {
-                        // Check for irregular series, only if the serie ended
-                        if (nowDelta != previousTsDelta) {
-                            regularIntervals = false;
-                            debug("TS deltas are not regular");
-                            break;
+                            // Reset
+                            intervalStartTs = -1L;
+                            intervalLength = 0L;
                         }
                     }
-                    previousTsDelta = nowDelta;
+                    intervalLength++;
+
+                    // Timestamp for spannning points
+                    if (intervalStartTs == -1L) {
+                        intervalStartTs = ts;
+                    }
+
+                    // Interval ts delta
+                    long intervalTsDelta = Math.max(nowDelta, ts - intervalStartTs);
+
+                    // Only check intervals if this is the end of a chain
+                    if (endOfChain) {
+                        if (previousTsDelta > -1L) {
+                            // Check for irregular series, only if the serie ended
+                            if (intervalTsDelta != previousTsDelta) {
+                                regularIntervals = false;
+                                debug("TS deltas are not regular, is " + intervalTsDelta + " was " + previousTsDelta);
+                                break;
+                            }
+                        }
+                        previousTsDelta = intervalTsDelta;
+                    }
                 }
                 previousTs = ts;
             }
