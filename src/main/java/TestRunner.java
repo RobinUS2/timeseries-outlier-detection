@@ -22,21 +22,20 @@ public class TestRunner {
                 continue;
             }
             // Testing only
-            if (!p.contains("sine")) {
-                continue;
-            }
+//            if (!p.contains("sine")) {
+//                continue;
+//            }
             testDataFiles.add(p);
         }
 
         // List of analyzers
         List<ITimeserieAnalyzer> analyzers = new ArrayList<ITimeserieAnalyzer>();
-//        analyzers.add(new NormalDistributionTimeserieAnalyzer());
-//        analyzers.add(new LogNormalDistributionTimeserieAnalyzer());
-//        analyzers.add(new SimpleRegressionTimeserieAnalyzer());
-//        analyzers.add(new MovingAverageTimeserieAnalyzer());
-//        analyzers.add(new PolynomialRegressionTimeserieAnalyzer());
-//        analyzers.add(new IntervalInterceptorTimeserieAnalyzer());
-        analyzers.add(new HarmonicFitterTimeserieAnalyzer());
+        analyzers.add(new NormalDistributionTimeserieAnalyzer());
+        analyzers.add(new LogNormalDistributionTimeserieAnalyzer());
+        analyzers.add(new SimpleRegressionTimeserieAnalyzer());
+        analyzers.add(new MovingAverageTimeserieAnalyzer());
+        analyzers.add(new PolynomialRegressionTimeserieAnalyzer());
+        analyzers.add(new IntervalInterceptorTimeserieAnalyzer());
 
         // Load
         AbstractDataLoader dl;
