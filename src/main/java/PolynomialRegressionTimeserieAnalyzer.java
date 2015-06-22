@@ -1,8 +1,7 @@
-import net.sourceforge.openforecast.DataPoint;
 import net.sourceforge.openforecast.DataSet;
 import net.sourceforge.openforecast.Observation;
 import net.sourceforge.openforecast.models.MovingAverageModel;
-import net.sourceforge.openforecast.models.WeightedMovingAverageModel;
+import net.sourceforge.openforecast.models.PolynomialRegressionModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,11 +11,11 @@ import java.util.Map;
 /**
  * Created by robin on 21/06/15.
  */
-public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
+public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
     public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
-            MovingAverageModel m = new MovingAverageModel(10); // @Todo dynamic window
+            PolynomialRegressionModel m = new PolynomialRegressionModel("ts");
 
             // Create train dataset
             DataSet dsTrain = new DataSet();
