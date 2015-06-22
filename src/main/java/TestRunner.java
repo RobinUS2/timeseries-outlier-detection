@@ -22,7 +22,7 @@ public class TestRunner {
                 continue;
             }
             // Testing only
-//            if (!p.contains("intervals_multi_no_noise_with_errors")) {
+//            if (!p.contains("sine")) {
 //                continue;
 //            }
             testDataFiles.add(p);

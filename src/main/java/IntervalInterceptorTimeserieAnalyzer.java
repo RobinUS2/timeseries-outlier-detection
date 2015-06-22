@@ -27,6 +27,14 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                 // Train
                 r.train();
 
+                // Reliable?
+                double maxMse = 0.05; // 95% = 0.05
+                double relMse = r.getMeanSquareError() / r.getTotalSumSquares();
+                if (relMse > maxMse) {
+                    dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
+                    return null;
+                }
+
                 // Predict
                 double maxRelDif = 0.05;
                 for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
@@ -35,8 +43,10 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                     double expectedVal = r.predict(ts);
                     double dif = expectedVal / val;
                     dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal + " (dif " + dif + ")");
-                    if (Math.abs(dif) < 1 - maxRelDif || Math.abs(dif) > 1 + maxRelDif) {
-                        TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), -1, -1);
+                    double lb = 1 - maxRelDif;
+                    double rb = 1 + maxRelDif;
+                    if (Math.abs(dif) < lb || Math.abs(dif) > rb) {
+                        TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb * expectedVal, rb * expectedVal);
                         outliers.add(outlier);
                     }
                 }

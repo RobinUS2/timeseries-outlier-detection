@@ -58,8 +58,14 @@ public class FileDataLoader extends AbstractDataLoader {
         // Iterate lines
         long i = 0L;
         for (String line : lines) {
+            // Line
+            line = line.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+
             // Split
-            String[] cols = line.trim().split("\\s+");
+            String[] cols = line.split("\\s+");
 
             // Mapping of series
             if (i == 0L) {

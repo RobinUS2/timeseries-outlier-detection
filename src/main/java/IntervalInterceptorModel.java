@@ -18,6 +18,8 @@ public class IntervalInterceptorModel {
     private boolean isTrained;
     private double avg;
     private double stdDev;
+    private double totalSumSquares;
+    private double meanSquareError;
     private int dataCount;
     private long tsDelta;
     private SimpleRegression nonPatternRegression;
@@ -272,8 +274,26 @@ public class IntervalInterceptorModel {
             nonPatternRegression.addData((double)kv.getKey(), kv.getValue());
         }
 
+        // MSE for reliability
+        totalSumSquares = 0.0D;
+        totalSumSquares += nonPatternRegression.getTotalSumSquares();
+        meanSquareError = 0.0D;
+        meanSquareError += nonPatternRegression.getMeanSquareError();
+        for (IntervalPattern ip : intervalPatterns) {
+            meanSquareError += ip.peakRegression.getMeanSquareError();
+            totalSumSquares += ip.peakRegression.getTotalSumSquares();
+        }
+
         // Done
         isTrained = true;
+    }
+
+    public double getMeanSquareError() {
+        return meanSquareError;
+    }
+
+    public double getTotalSumSquares() {
+        return totalSumSquares;
     }
 
     protected void debug(String msg) {
@@ -299,7 +319,7 @@ public class IntervalInterceptorModel {
         }
 
         // Iterate patterns
-        debug(intervalPatterns.size() + "");
+        debug(intervalPatterns.size() + " patterns found");
         for (IntervalPattern ip : intervalPatterns) {
             double prediction = ip.predict(ts);
             if (!Double.isNaN(prediction)) {
