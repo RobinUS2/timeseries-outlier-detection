@@ -1,3 +1,4 @@
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import sun.nio.cs.Surrogate;
 
 import java.util.ArrayList;
@@ -141,6 +142,7 @@ public class IntervalInterceptorModel {
             HashMap<String, Integer> possibleIntervals = new HashMap<String, Integer>();
             double minVal = Double.MAX_VALUE;
             double maxVal = Double.MIN_VALUE;
+            TreeMap<Long, Double> patternDataPoints = new TreeMap<Long, Double>();
             for (Map.Entry<Long, Double> kv: foundPairs.entrySet()) {
                 // Store min and max
                 double val = kv.getValue();
@@ -210,6 +212,9 @@ public class IntervalInterceptorModel {
                     }
                 }
                 previousTs = ts;
+
+                // Store datapoints
+                patternDataPoints.put(ts, val);
             }
 
             debug("Possible intervals " + possibleIntervals.toString());
@@ -227,7 +232,7 @@ public class IntervalInterceptorModel {
                 int length = Integer.parseInt(split[0].substring(1));
                 int interval = Integer.parseInt(split[1].substring(1));
                 debug("Pattern found: length " + length + " with interval of " + interval);
-                IntervalPattern ip = new IntervalPattern(length, interval, minVal, maxVal, lastIntervalEndTs);
+                IntervalPattern ip = new IntervalPattern(length, interval, patternDataPoints, lastIntervalEndTs);
                 intervalPatterns.add(ip);
             }
 
@@ -275,41 +280,63 @@ public class IntervalInterceptorModel {
 
         // Iterate patterns
         for (IntervalPattern ip : intervalPatterns) {
-            long tSinceLastOccurrence = ts - ip.lastIntervalEndTs;
-            long patternLength = (ip.length * tsDelta) + ip.interval;
+            double prediction = ip.predict(ts);
+            if (!Double.isNaN(prediction)) {
+                return prediction;
+            }
+        }
+
+        // Unable to forecast, not a peak / no peaks detected
+        // @todo return value from simple regression without all the peaks
+        return Double.NaN;
+    }
+
+    private class IntervalPattern {
+        private final int length;
+        private final int interval;
+        private final long lastIntervalEndTs;
+        private final TreeMap<Long, Double> dataPoints;
+        private SimpleRegression regression;
+        private IntervalPattern(int length, int interval, TreeMap<Long, Double> dps, long lastIntervalEndTs) {
+            this.length = length;
+            this.interval = interval;
+            this.lastIntervalEndTs = lastIntervalEndTs;
+            this.dataPoints = dps;
+            regression = new SimpleRegression();
+            train();
+        }
+
+        private final void train() {
+            for (Map.Entry<Long, Double> kv : dataPoints.entrySet()) {
+                regression.addData((double) kv.getKey(), kv.getValue());
+            }
+        }
+
+        public double predict(long ts) {
+            long tSinceLastOccurrence = ts - lastIntervalEndTs;
+            long patternLength = (length * tsDelta) + interval;
             int patternsMatched = (int)Math.floor(tSinceLastOccurrence / patternLength);
             long normalizedTsinceLastOccurence = tSinceLastOccurrence - (patternsMatched * patternLength);
             debug(tSinceLastOccurrence + " tSinceLastOccurrence");
             debug(normalizedTsinceLastOccurence + " normalizedTsinceLastOccurence");
             debug(patternLength + " patternLength");
             debug(patternsMatched + " patternsMatched");
-            if (normalizedTsinceLastOccurence >= ip.interval && normalizedTsinceLastOccurence <= patternLength) {
-                return (ip.minVal + ip.maxVal)/2; // @todo Store avg in pattern and use that
+            if (normalizedTsinceLastOccurence >= interval && normalizedTsinceLastOccurence <= patternLength) {
+                return regression.predict((double)ts);
             }
+            return Double.NaN;
         }
 
-        // Unable to forecast, not a peak / no peaks detected
-        // @todo return value from simple regression without all the peaks
-        return avg;
-    }
-
-    private class IntervalPattern {
-        private final int length;
-        private final int interval;
-        private final double minVal;
-        private final double maxVal;
-        private final long lastIntervalEndTs;
-        private IntervalPattern(int length, int interval, double minVal, double maxVal, long lastIntervalEndTs) {
-            this.length = length;
-            this.interval = interval;
-            this.minVal = minVal;
-            this.maxVal = maxVal;
-            this.lastIntervalEndTs = lastIntervalEndTs;
+        public double getAvgPeak() {
+            double sum = 0.0D;
+            for (double v : dataPoints.values()) {
+                sum += v;
+            }
+            return sum / dataPoints.size();
         }
-
 
         public String toString() {
-            return getClass().getSimpleName()  + " length=" + length + " interval=" +interval + " minval=" + minVal + " maxval=" + maxVal + " lastend=" + lastIntervalEndTs;
+            return getClass().getSimpleName()  + " length=" + length + " interval=" +interval + " lastend=" + lastIntervalEndTs + " data=" + dataPoints.toString();
         }
 
 
