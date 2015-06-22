@@ -29,6 +29,7 @@ public class TestRunner {
         analyzers.add(new NormalDistributionTimeserieAnalyzer());
         analyzers.add(new LogNormalDistributionTimeserieAnalyzer());
         analyzers.add(new SimpleRegressionTimeserieAnalyzer());
+        analyzers.add(new MovingAverageTimeserieAnalyzer());
 
         // Load
         AbstractDataLoader dl;
