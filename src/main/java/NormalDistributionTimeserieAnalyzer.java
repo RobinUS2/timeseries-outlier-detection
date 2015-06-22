@@ -42,8 +42,11 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
             // Detect outliers
             double maxStdDevMp = 1.0D;
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
-                if (tskv.getValue() > avg + (maxStdDevMp * stdDev) || tskv.getValue() < avg - (maxStdDevMp * stdDev)) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue());
+                double val = tskv.getValue();
+                double rightBound = avg + (maxStdDevMp * stdDev);
+                double leftBound = avg - (maxStdDevMp * stdDev);
+                if (val < leftBound || val > rightBound) {
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), leftBound, rightBound);
                     outliers.add(outlier);
                 }
             }

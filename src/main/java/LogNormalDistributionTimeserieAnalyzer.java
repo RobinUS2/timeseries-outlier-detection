@@ -43,8 +43,10 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
             double maxStdDevMp = 1.0D;
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 double val = convertValue(tskv.getValue());
-                if (val > avg + (maxStdDevMp * stdDev) || val < avg - (maxStdDevMp * stdDev)) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue());
+                double rightBound = avg + (maxStdDevMp * stdDev);
+                double leftBound = avg - (maxStdDevMp * stdDev);
+                if (val < leftBound || val > rightBound) {
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), val, leftBound, rightBound);
                     outliers.add(outlier);
                 }
             }

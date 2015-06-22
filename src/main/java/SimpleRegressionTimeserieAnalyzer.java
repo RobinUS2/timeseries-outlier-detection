@@ -17,7 +17,6 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             SimpleRegression r = new SimpleRegression();
 
             // Train regression
-            // @todo on a partial set
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataTrain().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
@@ -32,14 +31,15 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope confidence interval = " + r.getSlopeConfidenceInterval());
 
             // Predict
-            // @todo on a partial set
-            double maxRelDif = 0.1;
+            double maxRelDif = 0.1; // @todo dynamic
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
                 double expectedVal = r.predict(ts);
-                if (val < expectedVal * (1 - maxRelDif) || val > expectedVal * (1 + maxRelDif)) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue());
+                double leftBound = expectedVal * (1 - maxRelDif);
+                double rightBound = expectedVal * (1 + maxRelDif);
+                if (val < leftBound || val > rightBound) {
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), leftBound, rightBound);
                     outliers.add(outlier);
                 }
                 //dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "ts " + ts + " expected " + expectedVal + " is " + val);

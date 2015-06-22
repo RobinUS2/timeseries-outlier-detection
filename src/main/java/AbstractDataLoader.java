@@ -141,7 +141,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         // False positives?
         for (TimeserieOutlier o : outliers) {
             if (!expectedErrors.contains(o.getTs())) {
-                log(LOG_ERROR, getClass().getSimpleName(), "Found false positive at " + o.getTs() + " triggered by " + o.getAnalyzerName());
+                log(LOG_ERROR, getClass().getSimpleName(), "Found false positive at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > " + o.getVal() + " < " + o.getRightBound());
             }
         }
     }
