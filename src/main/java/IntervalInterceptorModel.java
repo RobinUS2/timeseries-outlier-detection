@@ -27,7 +27,7 @@ public class IntervalInterceptorModel {
         data = new TreeMap<Long, Double>();
         maxValue = Double.MIN_VALUE;
         minValue = Double.MAX_VALUE;
-        debugEnabled = true;
+        debugEnabled = false;
         intervalPatterns = new ArrayList<IntervalPattern>();
     }
 
@@ -330,15 +330,15 @@ public class IntervalInterceptorModel {
         }
 
         public double predict(long ts) {
+            debug(ts + " ts");
             long tSinceLastOccurrence = ts - lastIntervalEndTs;
-            long patternLength = (length * tsDelta) + interval;
-            int patternsMatched = (int)Math.floor(tSinceLastOccurrence / patternLength);
-            long normalizedTsinceLastOccurence = tSinceLastOccurrence - (patternsMatched * patternLength);
+            int patternsMatched = (int)Math.floor(tSinceLastOccurrence / interval);
+            long normalizedTsinceLastOccurence = tSinceLastOccurrence - (patternsMatched * interval);
             debug(tSinceLastOccurrence + " tSinceLastOccurrence");
             debug(normalizedTsinceLastOccurence + " normalizedTsinceLastOccurence");
-            debug(patternLength + " patternLength");
+            debug(interval + " patternLength");
             debug(patternsMatched + " patternsMatched");
-            if (normalizedTsinceLastOccurence >= interval && normalizedTsinceLastOccurence <= patternLength) {
+            if (normalizedTsinceLastOccurence >= 0 && normalizedTsinceLastOccurence < (length * tsDelta)) {
                 debug("in peak");
                 return peakRegression.predict((double)ts);
             }
