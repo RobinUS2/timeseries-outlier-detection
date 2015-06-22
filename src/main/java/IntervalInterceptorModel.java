@@ -40,8 +40,30 @@ public class IntervalInterceptorModel {
         // Calculate average and standard deviation, very low stddev will make this unusable algo (as there are no peaks/lows)
         double total = 0.0D;
         dataCount = 0;
-        for (double val : data.values()) {
+        long tsPrev = -1;
+        long tsDelta = -1L;
+        for (Map.Entry<Long, Double> kv:  data.entrySet()) {
+            double val = kv.getValue();
+
+            // Current time
+            long ts = kv.getKey();
+
+            // Sparse data?
+            if (tsPrev > -1L) {
+                long nowDelta = ts - tsPrev;
+                if (tsDelta > -1 && nowDelta != tsDelta) {
+                    throw new Exception("Timeseries time interval not consistent");
+                }
+                tsDelta = nowDelta;
+            }
+
+            // Previous time
+            tsPrev = ts;
+
+            // Total
             total += val;
+
+            // Data point count
             dataCount++;
         }
         avg = total / (double)dataCount;
@@ -99,19 +121,31 @@ public class IntervalInterceptorModel {
             long previousTs = -1L;
             long previousTsDelta = -1L;
             boolean regularIntervals = true;
+            long intervalStartTs = -1L; // Start timestamp
+            long intervalLength = 0L; // Steps in the current interval
             for (Map.Entry<Long, Double> kv: foundPairs.entrySet()) {
                 long ts = kv.getKey();
                 if (previousTs > -1L) {
-                    long tsDelta = ts - previousTs;
-                    debug("ts delta " + tsDelta);
+                    // Delta compared to previous entry
+                    long nowDelta = ts - previousTs;
+                    debug("ts delta " + nowDelta);
+
+                    // Is the previous peak 1 step away, in that case this is a interval spanning multiple points
+                    if (nowDelta == tsDelta) {
+                        debug("chained to prev delta");
+                        // @todo finish
+                    }
+
+
                     if (previousTsDelta > -1L) {
-                        if (tsDelta != previousTsDelta) {
+                        // Check for irregular series, only if the serie ended
+                        if (nowDelta != previousTsDelta) {
                             regularIntervals = false;
                             debug("TS deltas are not regular");
                             break;
                         }
                     }
-                    previousTsDelta = tsDelta;
+                    previousTsDelta = nowDelta;
                 }
                 previousTs = ts;
             }
