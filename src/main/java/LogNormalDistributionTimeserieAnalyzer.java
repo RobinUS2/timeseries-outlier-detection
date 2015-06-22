@@ -33,7 +33,8 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Stddev = " + stdDev);
 
             // Is this filter reliable?
-            double stdDevLim = 0.25 * avg; // @todo dynamic
+            double stdDevLim = 0.05 * avg; // @todo dynamic
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Stddev limit = " + stdDevLim);
             if (stdDev > stdDevLim) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on standard deviation average crosscheck (is " + stdDev + " exceeds " + stdDevLim + ")");
                 return null;
