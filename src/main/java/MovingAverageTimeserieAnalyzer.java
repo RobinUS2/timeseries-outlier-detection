@@ -58,7 +58,7 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
             }
 
             // Classify
-            double maxRelDif = 0.5 * relMse; // Half of the expected error is acceptable
+            double maxRelDif = Math.max(0.5 * relMse, 0.05); // Half of the expected error is acceptable, or 5%
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
@@ -66,11 +66,12 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
                 o.setIndependentValue("ts", ts);
                 double expected = m.forecast(o);
                 double dif = expected / val;
+                // @Todo check logic
                 if (Math.abs(dif) < 1 - maxRelDif || Math.abs(dif) > 1 + maxRelDif) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), -1, -1);
                     outliers.add(outlier);
                 }
-                dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + expected + " actual " + val);
+                dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + expected + " actual " + val + " dif " + dif);
             }
 
         }
