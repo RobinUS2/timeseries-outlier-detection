@@ -13,7 +13,7 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
             // Average
             double total = 0.0D;
             long count = 0L;
-            for (double val : kv.getValue().getData().values()) {
+            for (double val : kv.getValue().getDataTrain().values()) {
                 val = convertValue(val);
                 total += val;
                 count++;
@@ -23,7 +23,7 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
 
             // Stddev
             double msqT = 0.0D;
-            for (double val : kv.getValue().getData().values()) {
+            for (double val : kv.getValue().getDataTrain().values()) {
                 val = convertValue(val);
                 double msq = Math.pow(val - avg, 2.0D);
                 msqT += msq;
@@ -41,7 +41,7 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
 
             // Detect outliers
             double maxStdDevMp = 1.0D;
-            for (Map.Entry<Long, Double> tskv : kv.getValue().getData().entrySet()) {
+            for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 double val = convertValue(tskv.getValue());
                 if (val > avg + (maxStdDevMp * stdDev) || val < avg - (maxStdDevMp * stdDev)) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue());

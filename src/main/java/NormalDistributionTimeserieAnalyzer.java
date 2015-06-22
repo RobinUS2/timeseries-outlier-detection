@@ -15,7 +15,7 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
             // Average
             double total = 0.0D;
             long count = 0L;
-            for (double val : kv.getValue().getData().values()) {
+            for (double val : kv.getValue().getDataTrain().values()) {
                 total += val;
                 count++;
             }
@@ -24,7 +24,7 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
 
             // Stddev
             double msqT = 0.0D;
-            for (double val : kv.getValue().getData().values()) {
+            for (double val : kv.getValue().getDataTrain().values()) {
                 double msq = Math.pow(val - avg, 2.0D);
                 msqT += msq;
             }
@@ -41,7 +41,7 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
 
             // Detect outliers
             double maxStdDevMp = 1.0D;
-            for (Map.Entry<Long, Double> tskv : kv.getValue().getData().entrySet()) {
+            for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 if (tskv.getValue() > avg + (maxStdDevMp * stdDev) || tskv.getValue() < avg - (maxStdDevMp * stdDev)) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue());
                     outliers.add(outlier);
