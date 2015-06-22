@@ -36,7 +36,6 @@ public abstract class AbstractDataLoader implements IDataLoader {
         }
     }
 
-
     public void setConfig(String k, String v) {
         settings.put(k, v);
     }
