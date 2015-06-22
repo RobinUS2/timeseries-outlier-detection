@@ -41,18 +41,17 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             }
 
             // Predict
-            double maxRelDif = 0.2; // @todo dynamic
+            double maxRelDif = 0.5 * relMse; // Half of the expected error is acceptable
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
                 double expectedVal = r.predict(ts);
-                double leftBound = expectedVal * (1 - maxRelDif);
-                double rightBound = expectedVal * (1 + maxRelDif);
-                if (val < leftBound || val > rightBound) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), leftBound, rightBound);
+                double dif = expectedVal / val;
+                //dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal + " (dif " + dif + ")");
+                if (Math.abs(dif) < 1 - maxRelDif || Math.abs(dif) > 1 + maxRelDif) {
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), -1, -1);
                     outliers.add(outlier);
                 }
-                //dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "ts " + ts + " expected " + expectedVal + " is " + val);
             }
         }
         return outliers;
