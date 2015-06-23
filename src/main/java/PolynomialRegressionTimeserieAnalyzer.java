@@ -19,20 +19,16 @@ public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnal
 
             // Create train dataset
             DataSet dsTrain = new DataSet();
-            long count = 0L;
-            double total = 0D;
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataTrain().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
-                total += val;
-                count++;
                 Observation o = new Observation(val);
                 o.setIndependentValue("ts", ts);
                 dsTrain.add(o);
             }
 
             // Avg
-            double avg = total / (double)count;
+            double avg = kv.getValue().getTrainAvg();
 
             // Total sum of squares
             double tsos = 0D;
