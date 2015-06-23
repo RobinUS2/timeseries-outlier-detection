@@ -36,7 +36,7 @@ public class TestRunner {
         analyzers.add(new MovingAverageTimeserieAnalyzer());
         analyzers.add(new PolynomialRegressionTimeserieAnalyzer());
         analyzers.add(new IntervalInterceptorTimeserieAnalyzer());
-        analyzers.add(new RandomWalkTimeserieAnalyzer());
+        analyzers.add(new RandomWalkRegressionTimeserieAnalyzer());
 
         // Load
         AbstractDataLoader dl;

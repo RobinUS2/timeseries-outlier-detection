@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * Created by robin on 21/06/15.
  */
-public class RandomWalkTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
+public class RandomWalkRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
     public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
