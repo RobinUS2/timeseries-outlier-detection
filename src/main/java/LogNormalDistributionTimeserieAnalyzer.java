@@ -37,7 +37,7 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Stddev limit = " + stdDevLim);
             if (stdDev > stdDevLim) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on standard deviation average crosscheck (is " + stdDev + " exceeds " + stdDevLim + ")");
-                return null;
+                continue;
             }
 
             // Detect outliers

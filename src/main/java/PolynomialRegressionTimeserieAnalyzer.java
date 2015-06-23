@@ -49,11 +49,11 @@ public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnal
             // Validate, total sum of squares must be bigger than 0 as else there is no delta between avg and data values
             double mse = m.getMSE();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean square err = " + mse);// Reliable?
-            double maxMse = 0.05; // 95% = 0.05
+            double maxMse = 0.02; // 95% = 0.05
             double relMse = mse / tsos;
             if (relMse > maxMse && tsos > 0D) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
-                return null;
+                continue;
             }
 
             // Classify

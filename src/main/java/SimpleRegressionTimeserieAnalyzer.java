@@ -38,7 +38,7 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Relative MSE = " + relMse);
             if (relMse > maxMse) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
-                return null;
+                continue;
             }
 
             // Predict

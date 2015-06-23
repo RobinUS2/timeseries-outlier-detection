@@ -17,6 +17,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public final int LOG_INFO = 4;
     public final int LOG_DEBUG = 5;
     private final int LOGLEVEL = LOG_DEBUG;
+    private long targetTsStepResolution = 60; // Default
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -42,6 +43,9 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     public void setConfig(String k, String v) {
         settings.put(k, v);
+        if (k.equalsIgnoreCase("rollup")) {
+            targetTsStepResolution = Long.parseLong(v);
+        }
     }
 
     public String getConfig(String k, String d) {
@@ -80,15 +84,25 @@ public abstract class AbstractDataLoader implements IDataLoader {
                 // TS
                 Long ts = Long.parseLong(tskv.getKey());
 
+                // Bucket ts
+                ts = ts - (ts % targetTsStepResolution);
+
                 // Val
                 Double val = Double.parseDouble(tskv.getValue());
 
                 // Add
-                sortedMap.put(ts, val);
+                if (!sortedMap.containsKey(ts)) {
+                    sortedMap.put(ts, val);
+                } else {
+                    // Sum
+                    double tmp = sortedMap.get(ts);
+                    tmp += val;
+                    sortedMap.put(ts, tmp);
+                }
             }
 
             // Fill gaps
-            long tsInterval = 60; // @todo Dynamic / configurable
+            long tsInterval = targetTsStepResolution;
             long tsPrev = 0;
             HashMap<Long, Double> fills = new HashMap<Long, Double>();
             for (Long ts : sortedMap.keySet()) {
@@ -168,17 +182,33 @@ public abstract class AbstractDataLoader implements IDataLoader {
             }
         }
 
-        // False positives?
+        // Unexpected errors?
+        HashMap<Long, Integer> unexpectedErrors = new HashMap<Long, Integer>();
         for (TimeserieOutlier o : outliers) {
-            if (!expectedErrors.contains(o.getTs())) {
-                log(LOG_ERROR, getClass().getSimpleName(), "Found false positive at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > " + o.getVal() + " < " + o.getRightBound());
+            if (expectedErrors.contains(o.getTs())) {
+                continue;
             }
+            if (!unexpectedErrors.containsKey(o.getTs())) {
+                unexpectedErrors.put(o.getTs(), 1);
+            } else {
+                unexpectedErrors.put(o.getTs(), unexpectedErrors.get(o.getTs()) + 1);
+            }
+            log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > " + o.getVal() + " < " + o.getRightBound());
+        }
+        if (unexpectedErrors.size() > 0) {
+            log(LOG_ERROR, getClass().getSimpleName(), "Unexpected errors " + unexpectedErrors.toString());
         }
     }
 
 
     // Load data
     public void load() throws Exception {
+        // Load settings
+        HashMap<String, String> dataSettings = loadSettings();
+        for (Map.Entry<String, String> kv : dataSettings.entrySet()) {
+            setConfig(kv.getKey(), kv.getValue());
+        }
+
         // Load raw
         HashMap<String, HashMap<String, String>> raw = loadRawData();
         log(LOG_DEBUG, getClass().getSimpleName(), raw.toString());
@@ -189,6 +219,15 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
         // Load expected errors
         expectedErrors = loadExpectedErrors();
+        ArrayList<Long> tmp = new ArrayList<Long>();
+        for (Long l : expectedErrors) {
+            long lb = l - (l % targetTsStepResolution);
+            if (tmp.contains(lb)) {
+                continue;
+            }
+            tmp.add(lb);
+        }
+        expectedErrors = tmp;
         log(LOG_DEBUG, getClass().getSimpleName(), expectedErrors.toString());
     }
 

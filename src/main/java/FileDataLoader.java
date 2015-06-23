@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by robin on 21/06/15.
@@ -38,6 +39,26 @@ public class FileDataLoader extends AbstractDataLoader {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public HashMap<String, String> loadSettings() {
+        HashMap<String, String> settings = new HashMap<String, String>();
+        try {
+            String p = getConfig("path", null) + ".settings";
+            if (!new File(p).isFile()) {
+                return settings;
+            }
+            String json = FileUtils.readFileToString(new File(p));
+            JsonParser jp = new JsonParser();
+            JsonObject obj = jp.parse(json).getAsJsonObject();
+            for (Map.Entry<String, JsonElement> kv : obj.entrySet()) {
+                settings.put(kv.getKey(), kv.getValue().getAsString());
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return settings;
     }
 
 

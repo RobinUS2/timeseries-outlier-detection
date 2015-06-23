@@ -16,7 +16,8 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
     public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
-            MovingAverageModel m = new MovingAverageModel(10); // @Todo dynamic window
+            int window = 10; // @todo dynamic
+            MovingAverageModel m = new MovingAverageModel(window);
 
             // Create train dataset
             DataSet dsTrain = new DataSet();
@@ -54,7 +55,7 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
             double relMse = mse / tsos;
             if (relMse > maxMse && tsos > 0D) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
-                return null;
+                continue;
             }
 
             // Classify

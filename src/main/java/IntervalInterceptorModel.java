@@ -31,7 +31,7 @@ public class IntervalInterceptorModel {
         maxValue = Double.MIN_VALUE;
         minValue = Double.MAX_VALUE;
         debugEnabled = true;
-        traceEnabled = false;
+        traceEnabled = true;
         intervalPatterns = new ArrayList<IntervalPattern>();
     }
 
@@ -101,11 +101,13 @@ public class IntervalInterceptorModel {
         intervalPatterns.clear();
 
         // Scan intervals
-        double scanValue = maxValue;
+        double scanValue = avg + 1*stdDev;
         double maxScanValue = Double.MAX_VALUE;
         int maxIterations = 10000;
-        double scanStep = (maxValue - minValue) / maxIterations;
+        double scanStep = Math.max((maxValue - minValue) / maxIterations, stdDev / 3);
+        debug("Max value " + maxValue);
         debug("Scan step size " + scanStep);
+        debug("Scan start value " + scanValue);
         TreeMap<Long, Double> foundPairs = new TreeMap<Long, Double>();
         for (int i = 0; i <maxIterations; i++) {
             scanValue -= scanStep;
@@ -243,7 +245,7 @@ public class IntervalInterceptorModel {
                     }
                 }
 
-                int occurenceThreshold = 2;
+                int occurenceThreshold = 3;
                 if (maxOccurence >= occurenceThreshold) {
                     String[] split = maxK.split("_");
                     int length = Integer.parseInt(split[0].substring(1));
@@ -261,7 +263,7 @@ public class IntervalInterceptorModel {
                     minValFound = val;
                 }
             }
-            scanValue = minValFound - scanStep;
+            scanValue = minValFound;
             maxScanValue = minValFound;
             debug("Forward scanValue to " + scanValue);
 
@@ -291,7 +293,9 @@ public class IntervalInterceptorModel {
         for (IntervalPattern ip : intervalPatterns) {
             meanSquareError += ip.peakRegression.getMeanSquareError();
             totalSumSquares += ip.peakRegression.getTotalSumSquares();
+            debug("pattern relative mse = " + ip.peakRegression.getMeanSquareError() / ip.peakRegression.getTotalSumSquares());
         }
+        debug("non pattern relative mse = " + nonPatternRegression.getMeanSquareError() / nonPatternRegression.getTotalSumSquares());
 
         // Done
         isTrained = true;
@@ -315,6 +319,10 @@ public class IntervalInterceptorModel {
         if (traceEnabled) {
             System.out.println("[" + getClass().getSimpleName()+"] " + msg);
         }
+    }
+
+    public boolean patternsFound () {
+        return isTrained && intervalPatterns.size() > 0;
     }
 
     public double predict(long ts) throws Exception {
@@ -342,9 +350,11 @@ public class IntervalInterceptorModel {
             }
         }
 
+        return Double.NaN;
+
         // Unable to forecast, not a peak / no peaks detected, return value from simple regression without all the peaks
-        debug("low regression");
-        return nonPatternRegression.predict((double)ts);
+//        debug("low regression");
+//        return nonPatternRegression.predict((double)ts);
     }
 
     private class IntervalPattern {

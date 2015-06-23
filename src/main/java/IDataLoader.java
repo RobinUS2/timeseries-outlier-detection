@@ -7,4 +7,5 @@ import java.util.HashMap;
 public interface IDataLoader {
     public ArrayList<Long> loadExpectedErrors() throws Exception;
     HashMap<String, HashMap<String, String>> loadRawData() throws Exception;
+    HashMap<String, String> loadSettings() throws Exception;
 }

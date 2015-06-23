@@ -36,7 +36,7 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
             double stdDevLim = 0.25 * avg; // @todo dynamic
             if (stdDev > stdDevLim || Double.isInfinite(avg) || Double.isNaN(stdDev)) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on standard deviation average crosscheck (is " + stdDev + " exceeds " + stdDevLim + ")");
-                return null;
+                continue;
             }
 
             // Detect outliers

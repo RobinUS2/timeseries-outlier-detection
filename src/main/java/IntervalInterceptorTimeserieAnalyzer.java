@@ -14,6 +14,7 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
             try {
+                dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), kv.getKey());
                 // Get slope
                 IntervalInterceptorModel r = new IntervalInterceptorModel();
 
@@ -27,26 +28,31 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                 // Train
                 r.train();
 
+                // Patterns?
+                if (!r.patternsFound()) {
+                    dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "No patterns found");
+                    continue;
+                }
+
                 // Reliable?
                 double maxMse = 0.05; // 95% = 0.05
                 double relMse = r.getMeanSquareError() / r.getTotalSumSquares();
                 if (relMse > maxMse) {
                     dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
-                    return null;
+                    continue;
                 }
 
                 // Predict
-                double maxRelDif = 0.05;
+                double maxRelDif = 0.4; // Peaks are highly fluctuant
                 for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                     long ts = tskv.getKey();
                     double val = tskv.getValue();
                     double expectedVal = r.predict(ts);
-                    double dif = expectedVal / val;
-                    dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal + " (dif " + dif + ")");
-                    double lb = 1 - maxRelDif;
-                    double rb = 1 + maxRelDif;
-                    if (Math.abs(dif) < lb || Math.abs(dif) > rb) {
-                        TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb * expectedVal, rb * expectedVal);
+                    dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal);
+                    double lb = (1 - maxRelDif) * expectedVal;
+                    double rb = (1 + maxRelDif) * expectedVal;
+                    if (val < lb || val > rb) {
+                        TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb, rb);
                         if (!kv.getValue().validateOutlier(outlier)) {
                             continue;
                         }
