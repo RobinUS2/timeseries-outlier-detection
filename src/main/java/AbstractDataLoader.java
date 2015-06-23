@@ -116,6 +116,26 @@ public abstract class AbstractDataLoader implements IDataLoader {
             // Store result
             timeseries.put(serieName, timeserie);
         }
+
+        // Derive timeseries
+        if (timeseries.containsKey("regular") && timeseries.containsKey("error")) {
+            log(LOG_DEBUG, getClass().getSimpleName(), "Deriving error rate timeseries");
+            Timeseries timeserie = new Timeseries();
+            TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
+            for (Map.Entry<Long, Double> rts : timeseries.get("regular").getData().entrySet()) {
+                double regular = rts.getValue();
+                double errors = timeseries.get("error").getData().get(rts.getKey());
+                double rate = 0.0D;
+                if (regular > 0 && errors > 0) {
+                    rate = errors / regular;
+                } else if (errors > 0 && rate == 0) {
+                    rate = 1.0; // All errors, prevent infinite
+                }
+                sortedMap.put(rts.getKey(), rate);
+            }
+            timeserie.setData(sortedMap);
+            timeseries.put("error_rate", timeserie);
+        }
     }
 
     // Validate
