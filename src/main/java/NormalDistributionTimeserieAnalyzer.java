@@ -13,23 +13,11 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
             // Average
-            double total = 0.0D;
-            long count = 0L;
-            for (double val : kv.getValue().getDataTrain().values()) {
-                total += val;
-                count++;
-            }
-            double avg = total / (double)count;
+            double avg = kv.getValue().getTrainAvg();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Average = " + avg);
 
             // Stddev
-            double msqT = 0.0D;
-            for (double val : kv.getValue().getDataTrain().values()) {
-                double msq = Math.pow(val - avg, 2.0D);
-                msqT += msq;
-            }
-            double msqAvg = msqT / (double)count;
-            double stdDev = Math.sqrt(msqAvg);
+            double stdDev = kv.getValue().getTrainStdDev();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Stddev = " + stdDev);
 
             // Is this filter reliable?
