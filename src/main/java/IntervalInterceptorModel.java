@@ -27,6 +27,8 @@ public class IntervalInterceptorModel {
     private ArrayList<IntervalPattern> intervalPatterns;
     private boolean useLowRegression = false;
 
+    private final double MIN_PATTERN_COVERAGE = 0.1;
+
     public IntervalInterceptorModel() {
         data = new TreeMap<Long, Double>();
         maxValue = Double.MIN_VALUE;
@@ -246,14 +248,25 @@ public class IntervalInterceptorModel {
                     }
                 }
 
+                // Minimum occurence to quailify as possible pattern (something that happened once or twice is random-ish)
                 int occurenceThreshold = 3;
                 if (maxOccurence >= occurenceThreshold) {
+                    // Parse match
                     String[] split = maxK.split("_");
                     int length = Integer.parseInt(split[0].substring(1));
                     int interval = Integer.parseInt(split[1].substring(1));
-                    debug("Pattern found: length " + length + " with interval of " + interval + " occured " + maxOccurence + " time(s)");
-                    IntervalPattern ip = new IntervalPattern(length, interval, patternDataPoints, lastIntervalEndTs);
-                    intervalPatterns.add(ip);
+
+                    // Coverage
+                    int totalPatternLength = length*interval*maxOccurence;
+                    double totalPatternCoverage = (double)totalPatternLength / (double)(data.lastKey() - data.firstKey());
+                    debug("Total pattern coverage " + totalPatternCoverage + " (" + totalPatternCoverage*100 + "%)");
+
+                    // Match
+                    if (totalPatternCoverage > MIN_PATTERN_COVERAGE) {
+                        debug("Pattern found: length " + length + " with interval of " + interval + " occured " + maxOccurence + " time(s)");
+                        IntervalPattern ip = new IntervalPattern(length, interval, patternDataPoints, lastIntervalEndTs);
+                        intervalPatterns.add(ip);
+                    }
                 }
             }
 
