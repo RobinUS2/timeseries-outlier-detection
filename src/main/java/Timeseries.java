@@ -11,6 +11,8 @@ public class Timeseries {
     private TreeMap<Long, Double> classifyData;
     private long datapoints;
     private final double TRAIN_CLASSIFY_SPLIT = 0.7D;
+    private long trainDataPoints;
+    private long classifyDataPointsStart;
     public Timeseries() {
         data = new TreeMap<Long, Double>();
     }
@@ -18,6 +20,8 @@ public class Timeseries {
     public void setData(TreeMap<Long, Double> d) {
         data = d;
         datapoints = data.size();
+        trainDataPoints = (long)Math.floor((double)datapoints * TRAIN_CLASSIFY_SPLIT);
+        classifyDataPointsStart = (long)Math.floor((double)datapoints * TRAIN_CLASSIFY_SPLIT);
     }
 
     public String toString() {
@@ -32,13 +36,12 @@ public class Timeseries {
         if (trainData != null) {
             return trainData;
         }
-        long needed = (long)Math.floor((double)datapoints * TRAIN_CLASSIFY_SPLIT);
         long i = 0L;
         trainData = new TreeMap<Long, Double>();
         for (Map.Entry<Long, Double> kv : data.entrySet()) {
             trainData.put(kv.getKey(), kv.getValue());
             i++;
-            if (i == needed) {
+            if (i == trainDataPoints) {
                 break;
             }
         }
@@ -49,12 +52,11 @@ public class Timeseries {
         if (classifyData != null) {
             return classifyData;
         }
-        long start = (long)Math.floor((double)datapoints * TRAIN_CLASSIFY_SPLIT);
         long i = 0L;
         classifyData = new TreeMap<Long, Double>();
         for (Map.Entry<Long, Double> kv : data.entrySet()) {
             i++;
-            if (i < start) {
+            if (i < classifyDataPointsStart) {
                 continue;
             }
             classifyData.put(kv.getKey(), kv.getValue());
