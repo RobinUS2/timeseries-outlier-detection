@@ -123,16 +123,17 @@ public abstract class AbstractDataLoader implements IDataLoader {
         // Did we find the expected ones?
         for (Long expectedErr : expectedErrors) {
             boolean found = false;
+            int matches = 0;
             for (TimeserieOutlier o : outliers) {
                 if (expectedErr == o.getTs()) {
                     // Found expected
-                    found = true;
-                    break;
+                    matches++;
                 }
             }
+            log(LOG_DEBUG, getClass().getSimpleName(), "Error found " + matches + " time(s)");
 
             // Not found?
-            if (!found) {
+            if (matches < 1) {
                 log(LOG_ERROR, getClass().getSimpleName(), "Did not find error on " + expectedErr);
             }
         }
