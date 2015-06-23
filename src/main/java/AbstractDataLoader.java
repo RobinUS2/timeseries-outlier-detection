@@ -17,8 +17,8 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public final int LOG_INFO = 4;
     public final int LOG_DEBUG = 5;
     private final int LOGLEVEL = LOG_DEBUG;
-    private long targetTsStepResolution = 60; // Default
-    private long forecastPeriods = 10; // Amount of periods to forecast
+    private long targetTsStepResolution = 60; // Default, @todo configure
+    private long forecastPeriods = 10; // Amount of periods to forecast, @todo configure
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -72,7 +72,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     }
 
     // Convert it to a sorted TS (long) Value (double) set, fills gaps with 0's
-    protected void processData(HashMap<String, HashMap<String, String>> raw) {
+    protected void processData(HashMap<String, HashMap<String, String>> raw) throws Exception {
         for (Map.Entry<String, HashMap<String, String>> kv : raw.entrySet()) {
             String serieName = kv.getKey();
 
@@ -124,13 +124,13 @@ public abstract class AbstractDataLoader implements IDataLoader {
                 sortedMap.put(kvFill.getKey(), kvFill.getValue());
             }
 
-            // Put in timeserie
-            timeserie.setData(sortedMap);
-
             // Skip empty datasets
-            if (timeserie.getData().size() == 0) {
+            if (sortedMap.size() == 0) {
                 continue;
             }
+
+            // Put in timeserie
+            timeserie.setData(sortedMap);
 
             // Alert policy
             if (serieName.equals("error")) {
@@ -148,7 +148,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         _deriveErrorRate();
     }
 
-    protected void _deriveErrorRate() {
+    protected void _deriveErrorRate() throws Exception {
         if (timeseries.containsKey("regular") && timeseries.containsKey("error")) {
             log(LOG_DEBUG, getClass().getSimpleName(), "Deriving error rate timeseries");
             Timeseries timeserie = new Timeseries(forecastPeriods);
@@ -170,7 +170,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         }
     }
 
-    protected void _autoRollup() {
+    protected void _autoRollup() throws Exception {
         for (Timeseries ts : timeseries.values()) {
             while (true) {
                 long size = ts.getData().size();

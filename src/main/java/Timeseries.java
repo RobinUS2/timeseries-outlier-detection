@@ -41,7 +41,7 @@ public class Timeseries {
         alertOutlierUnder = under;
     }
 
-    public void rollup(long tsInterval) {
+    public void rollup(long tsInterval) throws Exception {
         TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
         for (Map.Entry<Long, Double> tskv : data.entrySet()) {
             long ts = tskv.getKey() - (tskv.getKey() % tsInterval);
@@ -51,9 +51,17 @@ public class Timeseries {
     }
 
 
-    public void setData(TreeMap<Long, Double> d) {
+    public void setData(TreeMap<Long, Double> d) throws Exception {
+        // Set data
         data = d;
         datapoints = data.size();
+
+        // Validate data set size
+        if (datapoints < maxClassifyPoints) {
+            throw new Exception("Not enough data available (" + datapoints + ") to meet forecast desire (" + maxClassifyPoints + ")");
+        }
+
+        // Train / classify cut-off
         trainDataPoints = classifyDataPointsStart = (long)Math.floor((double)datapoints * TRAIN_CLASSIFY_SPLIT);
         if (datapoints - trainDataPoints > maxClassifyPoints) {
             trainDataPoints = datapoints-maxClassifyPoints;
