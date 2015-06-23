@@ -30,7 +30,7 @@ public class IntervalInterceptorModel {
         data = new TreeMap<Long, Double>();
         maxValue = Double.MIN_VALUE;
         minValue = Double.MAX_VALUE;
-        debugEnabled = false;
+        debugEnabled = true;
         traceEnabled = false;
         intervalPatterns = new ArrayList<IntervalPattern>();
     }
@@ -350,11 +350,11 @@ public class IntervalInterceptorModel {
             }
         }
 
-        return Double.NaN;
-
+        // @todo important, dynamically decided between using non pattern regression or returining NAN
+        //return Double.NaN;
         // Unable to forecast, not a peak / no peaks detected, return value from simple regression without all the peaks
-//        debug("low regression");
-//        return nonPatternRegression.predict((double)ts);
+        debug("low regression");
+        return nonPatternRegression.predict((double)ts);
     }
 
     private class IntervalPattern {

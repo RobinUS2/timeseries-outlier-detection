@@ -22,7 +22,7 @@ public class TestRunner {
                 continue;
             }
             // Testing only
-//            if (!p.contains("real_test")) {
+//            if (!p.contains("real_test_4")) {
 //                continue;
 //            }
             testDataFiles.add(p);
