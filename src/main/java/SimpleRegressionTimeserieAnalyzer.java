@@ -30,11 +30,12 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope std err = " + r.getSlopeStdErr());
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope confidence interval = " + r.getSlopeConfidenceInterval()); //95% confidence interval
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean square err = " + r.getMeanSquareError());
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Sum square err = " + r.getSumSquaredErrors());
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Total sum square = " + r.getTotalSumSquares());
 
             // Reliable?
             double maxMse = 0.05; // 95% = 0.05
-            double relMse =r.getMeanSquareError() / r.getTotalSumSquares();
+            double relMse =r.getSumSquaredErrors() / r.getTotalSumSquares();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Relative MSE = " + relMse);
             if (relMse > maxMse) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");

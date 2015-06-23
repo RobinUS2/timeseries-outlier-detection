@@ -51,10 +51,18 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
             // Validate, total sum of squares must be bigger than 0 as else there is no delta between avg and data values
             double mse = m.getMSE();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean square err = " + mse);// Reliable?
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean absolute deviation = " + m.getMAD());// Reliable?
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean absolute percentage error = " + m.getMAPE());// Reliable?
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Akaike Information Criteria = " + m.getAIC());// Reliable? less is better
             double maxMse = 0.05; // 95% = 0.05
             double relMse = mse / tsos;
             if (relMse > maxMse && tsos > 0D) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
+                continue;
+            }
+            // Average absolute error bigger than standard deviation is not acceptable
+            if (kv.getValue().getTrainStdDev() > 0 && m.getMAD() > kv.getValue().getTrainStdDev()) {
+                dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on MAD (mean absolute error) / standard deviation crosscheck (MAD " + m.getMAD() + " exceeds stddev " + kv.getValue().getTrainStdDev() + ")");
                 continue;
             }
 
@@ -66,8 +74,8 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
                 Observation o = new Observation(0.0D); // Fake value
                 o.setIndependentValue("ts", ts);
                 double expectedVal = m.forecast(o);
-                double lb = expectedVal * (1-maxRelDif);
-                double rb = expectedVal * (1+maxRelDif);
+                double lb = Math.min(expectedVal - kv.getValue().getTrainStdDev(), expectedVal * (1-maxRelDif));
+                double rb = Math.max(expectedVal + kv.getValue().getTrainStdDev(), expectedVal * (1+maxRelDif));
                 dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal );
                 if (val < lb || val > rb) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb, rb);

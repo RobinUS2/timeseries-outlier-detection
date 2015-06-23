@@ -64,8 +64,8 @@ public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnal
                 Observation o = new Observation(0.0D); // Fake value
                 o.setIndependentValue("ts", ts);
                 double expectedVal = m.forecast(o);
-                double lb = expectedVal * (1-maxRelDif);
-                double rb = expectedVal * (1+maxRelDif);
+                double lb = Math.min(expectedVal - kv.getValue().getTrainStdDev(), expectedVal * (1-maxRelDif));
+                double rb = Math.max(expectedVal + kv.getValue().getTrainStdDev(), expectedVal * (1+maxRelDif));
                 dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal );
                 if (val < lb || val > rb) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb, rb);
