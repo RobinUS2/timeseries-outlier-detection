@@ -25,6 +25,7 @@ public class IntervalInterceptorModel {
     private long tsDelta;
     private SimpleRegression nonPatternRegression;
     private ArrayList<IntervalPattern> intervalPatterns;
+    private boolean useLowRegression = false;
 
     public IntervalInterceptorModel() {
         data = new TreeMap<Long, Double>();
@@ -297,6 +298,13 @@ public class IntervalInterceptorModel {
         }
         debug("non pattern relative mse = " + nonPatternRegression.getMeanSquareError() / nonPatternRegression.getTotalSumSquares());
 
+        // Use as low regression?
+        useLowRegression = false;
+        if (nonPatternRegression.getSlopeStdErr() < stdDev) {
+            debug("using low regression");
+            useLowRegression = true;
+        }
+
         // Done
         isTrained = true;
     }
@@ -350,8 +358,10 @@ public class IntervalInterceptorModel {
             }
         }
 
-        // @todo important, dynamically decided between using non pattern regression or returining NAN
-        //return Double.NaN;
+        // Dynamically decided between using non pattern regression or returining NAN
+        if (!useLowRegression) {
+            return Double.NaN;
+        }
         // Unable to forecast, not a peak / no peaks detected, return value from simple regression without all the peaks
         debug("low regression");
         return nonPatternRegression.predict((double)ts);
