@@ -19,6 +19,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     private final int LOGLEVEL = LOG_DEBUG;
     private long targetTsStepResolution = 60; // Default, @todo configure
     private long forecastPeriods = 10; // Amount of periods to forecast, @todo configure
+    private ValueNormalizationModes valueNormalizationMode = ValueNormalizationModes.NONE; // @todo Configure
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -90,6 +91,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
                 // Val
                 Double val = Double.parseDouble(tskv.getValue());
+                val = normalizeValue(val);
 
                 // Add
                 if (!sortedMap.containsKey(ts)) {
@@ -264,6 +266,30 @@ public abstract class AbstractDataLoader implements IDataLoader {
         }
         expectedErrors = tmp;
         log(LOG_DEBUG, getClass().getSimpleName(), expectedErrors.toString());
+    }
+
+    public double normalizeValue(double in) {
+        switch (valueNormalizationMode) {
+            case LOG:
+                if (in < 1 / Double.MAX_VALUE) {
+                    return 0;
+                }
+                return Math.log(in);
+            case LOG10:
+                if (in < 1 / Double.MAX_VALUE) {
+                    return 0;
+                }
+                return Math.log10(in);
+            case LOG_NATURAL:
+                if (in < 1 / Double.MAX_VALUE) {
+                    return 0;
+                }
+                return Math.log1p(in);
+            case NONE:
+            default:
+                // None
+                return in;
+        }
     }
 
 }
