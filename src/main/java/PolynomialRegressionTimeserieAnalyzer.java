@@ -49,10 +49,23 @@ public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnal
             // Validate, total sum of squares must be bigger than 0 as else there is no delta between avg and data values
             double mse = m.getMSE();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean square err = " + mse);// Reliable?
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean absolute deviation = " + m.getMAD());// Reliable?
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean absolute percentage error = " + m.getMAPE());// Reliable?
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Akaike Information Criteria = " + m.getAIC());// Reliable? less is better
             double maxMse = 0.02; // 95% = 0.05
             double relMse = mse / tsos;
             if (relMse > maxMse && tsos > 0D) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
+                continue;
+            }
+            // Average absolute error bigger than standard deviation is not acceptable
+            if (kv.getValue().getTrainStdDev() > 0 && m.getMAD() > kv.getValue().getTrainStdDev()) {
+                dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on MAD (mean absolute error) / standard deviation crosscheck (MAD " + m.getMAD() + " exceeds stddev " + kv.getValue().getTrainStdDev() + ")");
+                continue;
+            }
+            // Average absolute error bigger than average is not acceptable
+            if (m.getMAD() > kv.getValue().getTrainAvg()) {
+                dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on MAD (mean absolute error) / average crosscheck (MAD " + m.getMAD() + " exceeds avg " + kv.getValue().getTrainAvg() + ")");
                 continue;
             }
 

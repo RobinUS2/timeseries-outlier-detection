@@ -49,8 +49,8 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                     double val = tskv.getValue();
                     double expectedVal = r.predict(ts);
                     dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal);
-                    double lb = (1 - maxRelDif) * expectedVal;
-                    double rb = (1 + maxRelDif) * expectedVal;
+                    double lb = Math.min(expectedVal - kv.getValue().getTrainStdDev(), expectedVal * (1-maxRelDif));
+                    double rb = Math.max(expectedVal + kv.getValue().getTrainStdDev(), expectedVal * (1+maxRelDif));
                     if (val < lb || val > rb) {
                         TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb, rb);
                         if (!kv.getValue().validateOutlier(outlier)) {

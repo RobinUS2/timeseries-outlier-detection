@@ -65,6 +65,11 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on MAD (mean absolute error) / standard deviation crosscheck (MAD " + m.getMAD() + " exceeds stddev " + kv.getValue().getTrainStdDev() + ")");
                 continue;
             }
+            // Average absolute error bigger than average is not acceptable
+            if (m.getMAD() > kv.getValue().getTrainAvg()) {
+                dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on MAD (mean absolute error) / average crosscheck (MAD " + m.getMAD() + " exceeds avg " + kv.getValue().getTrainAvg() + ")");
+                continue;
+            }
 
             // Classify
             double maxRelDif = Math.max(0.5 * relMse, 0.05); // Half of the expected error is acceptable, or 5%
