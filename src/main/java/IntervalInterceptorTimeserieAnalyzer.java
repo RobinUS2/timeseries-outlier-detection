@@ -63,6 +63,7 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                 dataLoader.log(dataLoader.LOG_ERROR, getClass().getSimpleName(), e.getMessage());
             }
         }
+        // @todo also return values that were classified as OK, so we can mute errors if one model says A and one model says B
         return outliers;
     }
 }

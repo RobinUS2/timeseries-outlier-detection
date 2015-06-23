@@ -18,6 +18,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public final int LOG_DEBUG = 5;
     private final int LOGLEVEL = LOG_DEBUG;
     private long targetTsStepResolution = 60; // Default
+    private long forecastPeriods = 10; // Amount of periods to forecast
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -76,7 +77,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
             String serieName = kv.getKey();
 
             // New serie
-            Timeseries timeserie = new Timeseries();
+            Timeseries timeserie = new Timeseries(forecastPeriods);
 
             // Iterate data points and convert to the right datatypes, while sorting them
             TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
@@ -140,10 +141,17 @@ public abstract class AbstractDataLoader implements IDataLoader {
             timeseries.put(serieName, timeserie);
         }
 
+        // Many datapoints? Auto rollup
+        _autoRollup();
+
         // Derive timeseries
+        _deriveErrorRate();
+    }
+
+    protected void _deriveErrorRate() {
         if (timeseries.containsKey("regular") && timeseries.containsKey("error")) {
             log(LOG_DEBUG, getClass().getSimpleName(), "Deriving error rate timeseries");
-            Timeseries timeserie = new Timeseries();
+            Timeseries timeserie = new Timeseries(forecastPeriods);
             TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
             for (Map.Entry<Long, Double> rts : timeseries.get("regular").getData().entrySet()) {
                 double regular = rts.getValue();
@@ -159,6 +167,32 @@ public abstract class AbstractDataLoader implements IDataLoader {
             timeserie.setData(sortedMap);
             timeserie.setAlertPolicy(true, false); // Do not alert if lower than expected
             timeseries.put("error_rate", timeserie);
+        }
+    }
+
+    protected void _autoRollup() {
+        for (Timeseries ts : timeseries.values()) {
+            while (true) {
+                long size = ts.getData().size();
+                if (size > 1440 && targetTsStepResolution == 60) {
+                    // rollup to 5 minute windows if you have at least a day
+                    targetTsStepResolution = 300;
+                } else if (size > 864 && targetTsStepResolution == 300) {
+                    // rollup to 15 minute windows if you have at least three days
+                    targetTsStepResolution = 900;
+                } else if (size > 480 && targetTsStepResolution == 900) {
+                    // rollup to 30 minute windows if you have at least five days
+                    targetTsStepResolution = 1800;
+                } else {
+                    // No more options
+                    break;
+                }
+                log(LOG_DEBUG, getClass().getSimpleName(), "Rollup resolution to " + targetTsStepResolution);
+                for (Timeseries tsR : timeseries.values()) {
+                    tsR.rollup(targetTsStepResolution);
+                }
+            }
+            break;
         }
     }
 

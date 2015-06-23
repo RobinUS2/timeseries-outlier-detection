@@ -13,7 +13,7 @@ public class Timeseries {
     private double trainStdDev;
     private long datapoints;
     private final double TRAIN_CLASSIFY_SPLIT = 0.7D;
-    private final long maxClassifyPoints = 10;
+    private long maxClassifyPoints;
     private long trainDataPoints;
     private long classifyDataPointsStart;
     private boolean alertOutlierOver = true;
@@ -31,14 +31,25 @@ public class Timeseries {
         return true;
     }
 
-    public Timeseries() {
+    public Timeseries(long forecastPeriod) {
         data = new TreeMap<Long, Double>();
+        maxClassifyPoints = forecastPeriod; // How many data points to forecast?
     }
 
     public void setAlertPolicy(boolean over, boolean under) {
         alertOutlierOver = over;
         alertOutlierUnder = under;
     }
+
+    public void rollup(long tsInterval) {
+        TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
+        for (Map.Entry<Long, Double> tskv : data.entrySet()) {
+            long ts = tskv.getKey() - (tskv.getKey() % tsInterval);
+            sortedMap.put(ts, sortedMap.getOrDefault(ts, 0.0)+tskv.getValue());
+        }
+        setData(sortedMap);
+    }
+
 
     public void setData(TreeMap<Long, Double> d) {
         data = d;
@@ -110,7 +121,7 @@ public class Timeseries {
     }
 
     protected void _sanitizeTrainData() {
-        double outlierStdDevMp = 5.0D; // x times the standard deviation of the average is considered weird datapoint, 5 seems to be a good value "At five-sigma there is only one chance in nearly two million that a random fluctuation would yield the result" - wikipedia
+        double outlierStdDevMp = 6.0D; // x times the standard deviation of the average is considered weird datapoint, 5 seems to be a good value "At five-sigma there is only one chance in nearly two million that a random fluctuation would yield the result" - wikipedia
         double min = trainAvg - (trainStdDev * outlierStdDevMp);
         double max = trainAvg + (trainStdDev * outlierStdDevMp);
         double previousValue = trainAvg;
