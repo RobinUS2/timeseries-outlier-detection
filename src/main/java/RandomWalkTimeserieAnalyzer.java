@@ -1,41 +1,38 @@
-import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by robin on 21/06/15.
  */
-public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
+public class RandomWalkTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
     public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
-            // Get slope
+            TreeMap<Long, Double> deltas = new TreeMap<Long, Double>();
+            double previousValue = Double.NaN;
+            for (Map.Entry<Long, Double> tskv : kv.getValue().getDataTrain().entrySet()) {
+                double val = tskv.getValue();
+                if (!Double.isNaN(previousValue)) {
+                    deltas.put(tskv.getKey(), val - previousValue);
+                }
+                previousValue = val;
+            }
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Deltas = " + deltas.toString());
+
+            // Train simple regression based on deltas
             SimpleRegression r = new SimpleRegression();
 
             // Train regression
-            for (Map.Entry<Long, Double> tskv : kv.getValue().getDataTrain().entrySet()) {
+            for (Map.Entry<Long, Double> tskv : deltas.entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
                 r.addData((double)ts, val);
             }
 
-            // Slope
-            double slopeTs = 60.0D * r.getSlope(); // @todo dynamic
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope per time step = " + slopeTs);
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope = " + r.getSlope());
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope std err = " + r.getSlopeStdErr());
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Slope confidence interval = " + r.getSlopeConfidenceInterval()); //95% confidence interval
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean square err = " + r.getMeanSquareError());
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Sum square err = " + r.getSumSquaredErrors());
-            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Total sum square = " + r.getTotalSumSquares());
-
             // Reliable?
             double maxMse = 0.05; // 95% = 0.05
-            double relMse =r.getSumSquaredErrors() / r.getTotalSumSquares();
+            double relMse = r.getSumSquaredErrors() / r.getTotalSumSquares();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Relative MSE = " + relMse);
             if (Double.isNaN(relMse)) {
                 relMse = 0.0D;
@@ -47,10 +44,12 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
 
             // Predict
             double maxRelDif = Math.max(0.5 * relMse, 0.02); // Half of the expected error is acceptable, or 5%
+            double previousVal = kv.getValue().getDataTrain().get(kv.getValue().getDataTrain().lastKey());
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
-                double expectedVal = r.predict(ts);
+                double expectedVal = previousVal + r.predict(ts);
+                previousVal = expectedVal;
                 double lb = expectedVal * (1-maxRelDif);
                 double rb = expectedVal * (1+maxRelDif);
                 dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal );
