@@ -33,7 +33,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         switch(type) {
             case LOG_ERROR:
             case LOG_WARN:
-                System.err.println(msg);
+                System.err.println("ERR: " + msg);
                 break;
             default:
                 System.out.println(msg);

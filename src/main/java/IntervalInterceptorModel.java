@@ -15,6 +15,7 @@ public class IntervalInterceptorModel {
     private double maxValue;
     private double minValue;
     private boolean debugEnabled;
+    private boolean traceEnabled;
     private boolean isTrained;
     private double avg;
     private double stdDev;
@@ -29,7 +30,8 @@ public class IntervalInterceptorModel {
         data = new TreeMap<Long, Double>();
         maxValue = Double.MIN_VALUE;
         minValue = Double.MAX_VALUE;
-        debugEnabled = false;
+        debugEnabled = true;
+        traceEnabled = false;
         intervalPatterns = new ArrayList<IntervalPattern>();
     }
 
@@ -107,6 +109,9 @@ public class IntervalInterceptorModel {
         TreeMap<Long, Double> foundPairs = new TreeMap<Long, Double>();
         for (int i = 0; i <maxIterations; i++) {
             scanValue -= scanStep;
+            if (scanValue < minValue) {
+                break;
+            }
             foundPairs.clear();
             for (Map.Entry<Long, Double> kv: data.entrySet()) {
                 // Ignore below scan value
@@ -127,9 +132,9 @@ public class IntervalInterceptorModel {
                 // Options
                 foundPairs.put(kv.getKey(), kv.getValue());
             }
-            // Need at least two peaks to establish an interval
+            // Need at least three peaks to establish an interval
             int foundPairCount = foundPairs.size();
-            if (foundPairCount < 2) {
+            if (foundPairCount < 3) {
                 continue;
             }
 
@@ -167,16 +172,16 @@ public class IntervalInterceptorModel {
                 if (previousTs > -1L) {
                     // Delta compared to previous entry
                     long nowDelta = ts - previousTs;
-                    debug("ts delta " + nowDelta);
+                    trace("ts delta " + nowDelta);
 
                     // Is the previous peak 1 step away, in that case this is a interval spanning multiple points
                     boolean endOfChain = false;
                     if (nowDelta == tsDelta) {
-                        debug("chained to prev delta");
+                        trace("chained to prev delta");
                     } else {
                         if (intervalStartTs > -1L) {
                             // End
-                            debug("end of chain, started at " + intervalStartTs + " length " + intervalLength);
+                            trace("end of chain, started at " + intervalStartTs + " length " + intervalLength);
                             endOfChain = true;
 
                             // Option
@@ -208,7 +213,7 @@ public class IntervalInterceptorModel {
                         if (previousTsDelta > -1L) {
                             // Check for irregular series, only if the serie ended
                             if (intervalTsDelta != previousTsDelta) {
-                                debug("TS deltas are not regular, is " + intervalTsDelta + " was " + previousTsDelta);
+                                trace("TS deltas are not regular, is " + intervalTsDelta + " was " + previousTsDelta);
                             } else {
                                 // Regular delta, possible interval
                                 int tmp = possibleIntervals.getOrDefault(possibleIntervalKey, 0);
@@ -237,12 +242,16 @@ public class IntervalInterceptorModel {
                         maxK = kv.getKey();
                     }
                 }
-                String[] split = maxK.split("_");
-                int length = Integer.parseInt(split[0].substring(1));
-                int interval = Integer.parseInt(split[1].substring(1));
-                debug("Pattern found: length " + length + " with interval of " + interval);
-                IntervalPattern ip = new IntervalPattern(length, interval, patternDataPoints, lastIntervalEndTs);
-                intervalPatterns.add(ip);
+
+                int occurenceThreshold = 2;
+                if (maxOccurence >= occurenceThreshold) {
+                    String[] split = maxK.split("_");
+                    int length = Integer.parseInt(split[0].substring(1));
+                    int interval = Integer.parseInt(split[1].substring(1));
+                    debug("Pattern found: length " + length + " with interval of " + interval + " occured " + maxOccurence + " time(s)");
+                    IntervalPattern ip = new IntervalPattern(length, interval, patternDataPoints, lastIntervalEndTs);
+                    intervalPatterns.add(ip);
+                }
             }
 
             // Skip forward in scanStep to below the lowest value of the current pairs
@@ -298,6 +307,12 @@ public class IntervalInterceptorModel {
 
     protected void debug(String msg) {
         if (debugEnabled) {
+            System.out.println("[" + getClass().getSimpleName()+"] " + msg);
+        }
+    }
+
+    protected void trace(String msg) {
+        if (traceEnabled) {
             System.out.println("[" + getClass().getSimpleName()+"] " + msg);
         }
     }

@@ -42,7 +42,7 @@ public class SimpleRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer
             }
 
             // Predict
-            double maxRelDif = Math.max(0.5 * relMse, 0.05); // Half of the expected error is acceptable, or 5%
+            double maxRelDif = Math.max(0.5 * relMse, 0.02); // Half of the expected error is acceptable, or 5%
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 long ts = tskv.getKey();
                 double val = tskv.getValue();
