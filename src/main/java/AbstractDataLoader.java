@@ -130,7 +130,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
                     matches++;
                 }
             }
-            log(LOG_DEBUG, getClass().getSimpleName(), "Error found " + matches + " time(s)");
+            log(LOG_DEBUG, getClass().getSimpleName(), "Error at " + expectedErr + " found " + matches + " time(s)");
 
             // Not found?
             if (matches < 1) {
