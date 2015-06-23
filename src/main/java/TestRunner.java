@@ -22,9 +22,9 @@ public class TestRunner {
                 continue;
             }
             // Testing only
-//            if (!p.contains("sine")) {
-//                continue;
-//            }
+            if (!p.contains("real")) {
+                continue;
+            }
             testDataFiles.add(p);
         }
 

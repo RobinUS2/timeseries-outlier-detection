@@ -47,6 +47,9 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                     double rb = 1 + maxRelDif;
                     if (Math.abs(dif) < lb || Math.abs(dif) > rb) {
                         TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb * expectedVal, rb * expectedVal);
+                        if (!kv.getValue().validateOutlier(outlier)) {
+                            continue;
+                        }
                         outliers.add(outlier);
                     }
                 }

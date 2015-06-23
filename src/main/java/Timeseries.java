@@ -14,8 +14,28 @@ public class Timeseries {
     private final long maxClassifyPoints = 10;
     private long trainDataPoints;
     private long classifyDataPointsStart;
+    private boolean alertOutlierOver = true;
+    private boolean alertOutlierUnder = true;
+
+    public boolean validateOutlier(TimeserieOutlier outlier) {
+        if (outlier.getVal() < outlier.getLeftBound() && !alertOutlierUnder) {
+            // Do not alert if lower than expected
+            return false;
+        }
+        if (outlier.getVal() > outlier.getRightBound() && !alertOutlierOver) {
+            // Do not alert if higher than expected
+            return false;
+        }
+        return true;
+    }
+
     public Timeseries() {
         data = new TreeMap<Long, Double>();
+    }
+
+    public void setAlertPolicy(boolean over, boolean under) {
+        alertOutlierOver = over;
+        alertOutlierUnder = under;
     }
 
     public void setData(TreeMap<Long, Double> d) {

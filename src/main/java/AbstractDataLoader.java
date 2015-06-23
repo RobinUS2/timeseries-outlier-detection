@@ -16,6 +16,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public final int LOG_NOTICE = 3;
     public final int LOG_INFO = 4;
     public final int LOG_DEBUG = 5;
+    private final int LOGLEVEL = LOG_DEBUG;
 
     public AbstractDataLoader() {
         settings = new HashMap<String, String>();
@@ -25,6 +26,9 @@ public abstract class AbstractDataLoader implements IDataLoader {
     }
 
     public void log(int type, String className, String msg) {
+        if (type > LOGLEVEL) {
+            return;
+        }
         msg = "[" + getConfig("name", "") + "] [" + className + "] " + msg;
         switch(type) {
             case LOG_ERROR:
@@ -113,6 +117,11 @@ public abstract class AbstractDataLoader implements IDataLoader {
                 continue;
             }
 
+            // Alert policy
+            if (serieName.equals("error")) {
+                timeserie.setAlertPolicy(true, false); // Do not alert if lower than expected
+            }
+
             // Store result
             timeseries.put(serieName, timeserie);
         }
@@ -134,6 +143,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
                 sortedMap.put(rts.getKey(), rate);
             }
             timeserie.setData(sortedMap);
+            timeserie.setAlertPolicy(true, false); // Do not alert if lower than expected
             timeseries.put("error_rate", timeserie);
         }
     }

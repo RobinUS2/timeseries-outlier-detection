@@ -64,14 +64,17 @@ public class MovingAverageTimeserieAnalyzer extends AbstractTimeserieAnalyzer im
                 double val = tskv.getValue();
                 Observation o = new Observation(0.0D); // Fake value
                 o.setIndependentValue("ts", ts);
-                double expected = m.forecast(o);
-                double dif = expected / val;
-                // @Todo check logic
-                if (Math.abs(dif) < 1 - maxRelDif || Math.abs(dif) > 1 + maxRelDif) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), -1, -1);
+                double expectedVal = m.forecast(o);
+                double lb = expectedVal * (1-maxRelDif);
+                double rb = expectedVal * (1+maxRelDif);
+                dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + val + " " + expectedVal );
+                if (val < lb || val > rb) {
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), lb, rb);
+                    if (!kv.getValue().validateOutlier(outlier)) {
+                        continue;
+                    }
                     outliers.add(outlier);
                 }
-                dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), ts + " " + expected + " actual " + val + " dif " + dif);
             }
 
         }
