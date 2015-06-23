@@ -171,6 +171,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
             for (TimeserieOutlier o : outliers) {
                 if (expectedErr == o.getTs()) {
                     // Found expected
+                    log(LOG_DEBUG, getClass().getSimpleName(), "Error at " + expectedErr + " found by " + o.getAnalyzerName());
                     matches++;
                 }
             }
