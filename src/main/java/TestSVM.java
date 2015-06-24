@@ -1,21 +1,13 @@
-import edu.berkeley.compbio.jlibsvm.ContinuousModel;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
-import edu.berkeley.compbio.jlibsvm.SolutionModel;
-import edu.berkeley.compbio.jlibsvm.SvmProblem;
-import edu.berkeley.compbio.jlibsvm.binary.BinaryClassificationProblem;
-import edu.berkeley.compbio.jlibsvm.binary.BinaryClassificationSVM;
-import edu.berkeley.compbio.jlibsvm.binary.MutableBinaryClassificationProblemImpl;
-import edu.berkeley.compbio.jlibsvm.binary.Nu_SVC;
 import edu.berkeley.compbio.jlibsvm.kernel.GaussianRBFKernel;
-import edu.berkeley.compbio.jlibsvm.multi.MultiClassProblem;
-import edu.berkeley.compbio.jlibsvm.multi.MutableMultiClassProblemImpl;
 import edu.berkeley.compbio.jlibsvm.oneclass.MutableOneClassProblemImpl;
 import edu.berkeley.compbio.jlibsvm.oneclass.OneClassModel;
 import edu.berkeley.compbio.jlibsvm.oneclass.OneClassProblem;
 import edu.berkeley.compbio.jlibsvm.oneclass.OneClassSVC;
 import edu.berkeley.compbio.jlibsvm.scaler.LinearScalingModelLearner;
-import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModelLearner;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+
+import java.util.Random;
 
 /**
  * Created by robin on 24/06/15.
@@ -35,35 +27,31 @@ public class TestSVM {
 
         // Problem, P = point, L = label
         MutableOneClassProblemImpl problem = new MutableOneClassProblemImpl(3, Float.class);
-        SparseVector v = new SparseVector(1);
-        v.indexes[0] = 1;
-        v.values[0] = 100;
-        problem.addExampleFloat(v, 100F);
-
-        SparseVector v2 = new SparseVector(1);
-        v2.indexes[0] = 1;
-        v2.values[0] = 100;
-        problem.addExampleFloat(v2, 100F);
-
-        SparseVector v3 = new SparseVector(1);
-        v3.indexes[0] = 1;
-        v3.values[0] = 100;
-        problem.addExampleFloat(v3, 100F);
+        Random rand = new Random();
+        int samples = 100;
+        for (int i = 0; i < samples; i++) {
+            SparseVector v = new SparseVector(1);
+            v.indexes[0] = rand.nextInt(500);
+            v.values[0] = rand.nextInt(500);
+            problem.addExample(v, 1.0F);
+        }
 
         // SVM: The range of C is from zero to infinity but nu is always between [0,1]. A nice property of nu is that it is related to the ratio of support vectors and the ratio of the training error.
         OneClassSVC svm = new OneClassSVC();
 
         // Scale problem
-        OneClassProblem scaledProblem = problem.getScaledCopy(new NoopScalingModelLearner());
+        OneClassProblem scaledProblem = problem.getScaledCopy(new LinearScalingModelLearner(samples, true));
 
         // Train
         OneClassModel model = (OneClassModel) svm.train(scaledProblem, param);
 
         // Predict
-        SparseVector vp = new SparseVector(1);
-        vp.indexes[0] = 1;
-        vp.values[0] = 100;
-        double prob = model.predictValue(vp);
-        System.out.println(prob);
+        for (int i = 0; i < 100; i++) {
+            SparseVector vp = new SparseVector(1);
+            vp.indexes[0] = rand.nextInt(500);
+            vp.values[0] = rand.nextInt(500);
+            double prob = model.predictValue(vp);
+            System.out.println(prob);
+        }
     }
 }
