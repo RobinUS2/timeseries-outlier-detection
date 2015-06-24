@@ -272,6 +272,18 @@ public abstract class AbstractDataLoader implements IDataLoader {
         }
         if (unexpectedErrors.size() > 0) {
             log(LOG_ERROR, getClass().getSimpleName(), "Unexpected errors " + unexpectedErrors.toString());
+
+            // Unexpected errors in inliers list?
+            HashMap<Long, Integer> unexpectedErrorsSubInliers = new HashMap<Long, Integer>(unexpectedErrors);
+            for (Long outlierTs : unexpectedErrors.keySet()) {
+                for (TimeserieInlier inlier : inliers) {
+                    if (inlier.getTs() == outlierTs) {
+                        log(LOG_ERROR, getClass().getSimpleName(), "Unexpected error at " + outlierTs + " denied by by " + inlier.getAnalyzerName() + " " + inlier.getLeftBound() + " > is " + inlier.getVal() + " expected " + inlier.getExpectedVal() + " < " + inlier.getRightBound());
+                        unexpectedErrorsSubInliers.put(outlierTs, unexpectedErrorsSubInliers.get(outlierTs)-1);
+                    }
+                }
+            }
+            log(LOG_ERROR, getClass().getSimpleName(), "Unexpected errors minus inliers " + unexpectedErrorsSubInliers.toString());
         }
     }
 
