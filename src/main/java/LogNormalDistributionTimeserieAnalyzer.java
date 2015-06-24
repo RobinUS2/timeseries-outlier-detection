@@ -39,13 +39,18 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on standard deviation average crosscheck (is " + stdDev + " exceeds " + stdDevLim + ")");
                 continue;
             }
+            if (stdDev < 1 / Double.MAX_VALUE) {
+                dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on standard deviation crosscheck, deviation too low");
+                continue;
+            }
 
             // Detect outliers
             double maxStdDevMp = 1.0D;
+            double maxErr = Math.max(maxStdDevMp * stdDev, 0.05 * avg); // 1x std deviation or 5% of average
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 double val = convertValue(tskv.getValue());
-                double rightBound = avg + (maxStdDevMp * stdDev);
-                double leftBound = avg - (maxStdDevMp * stdDev);
+                double rightBound = avg + maxErr;
+                double leftBound = avg - maxErr;
                 if (val < leftBound || val > rightBound) {
                     TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), val, leftBound, rightBound);
                     if (!kv.getValue().validateOutlier(outlier)) {
