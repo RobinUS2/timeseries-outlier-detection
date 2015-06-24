@@ -335,6 +335,8 @@ public abstract class AbstractDataLoader implements IDataLoader {
                     return 0;
                 }
                 return Math.log1p(in);
+            case SQRT:
+                return Math.sqrt(in);
             case NONE:
             default:
                 // None
