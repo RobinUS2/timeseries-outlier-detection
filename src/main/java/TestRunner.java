@@ -30,6 +30,7 @@ public class TestRunner {
 
         // List of analyzers
         List<ITimeserieAnalyzer> analyzers = new ArrayList<ITimeserieAnalyzer>();
+        analyzers.add(new NoopTimeserieAnalyzer());
         analyzers.add(new NormalDistributionTimeserieAnalyzer());
         analyzers.add(new LogNormalDistributionTimeserieAnalyzer());
         analyzers.add(new SimpleRegressionTimeserieAnalyzer());
@@ -37,6 +38,7 @@ public class TestRunner {
         analyzers.add(new PolynomialRegressionTimeserieAnalyzer());
         analyzers.add(new IntervalInterceptorTimeserieAnalyzer());
         analyzers.add(new RandomWalkRegressionTimeserieAnalyzer());
+        analyzers.add(new OneClassSVMTimeserieAnalyzer());
 
         // Load
         AbstractDataLoader dl;
