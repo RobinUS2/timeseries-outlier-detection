@@ -11,15 +11,7 @@ public class RandomWalkRegressionTimeserieAnalyzer extends AbstractTimeserieAnal
 
         // Iterate series
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
-            TreeMap<Long, Double> deltas = new TreeMap<Long, Double>();
-            double previousValue = Double.NaN;
-            for (Map.Entry<Long, Double> tskv : kv.getValue().getDataTrain().entrySet()) {
-                double val = tskv.getValue();
-                if (!Double.isNaN(previousValue)) {
-                    deltas.put(tskv.getKey(), val - previousValue);
-                }
-                previousValue = val;
-            }
+            TreeMap<Long, Double> deltas = kv.getValue().getTrainDeltas();
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Deltas = " + deltas.toString());
 
             // Train simple regression based on deltas

@@ -203,4 +203,17 @@ public class Timeseries {
         }
         return classifyData;
     }
+
+    public TreeMap<Long, Double> getTrainDeltas() {
+        TreeMap<Long, Double> deltas = new TreeMap<Long, Double>();
+        double previousValue = Double.NaN;
+        for (Map.Entry<Long, Double> tskv : getDataTrain().entrySet()) {
+            double val = tskv.getValue();
+            if (!Double.isNaN(previousValue)) {
+                deltas.put(tskv.getKey(), val - previousValue);
+            }
+            previousValue = val;
+        }
+        return deltas;
+    }
 }
