@@ -16,19 +16,19 @@ public class TestSVM {
     public static void main(String [ ] args) throws Exception
     {
         // Kernel
-        GaussianRBFKernel kernel = new GaussianRBFKernel(1.0F);
+        GaussianRBFKernel kernel = new GaussianRBFKernel(0.1F);
 
         // Params: see http://mlpy.sourceforge.net/docs/3.4/svm.html
         ImmutableSvmParameterPoint.Builder paramPointBuilder = new ImmutableSvmParameterPoint.Builder();
         paramPointBuilder.kernel = kernel;
-        paramPointBuilder.nu = 0.5F; // The parameter nu is an upper bound on the fraction of margin errors and a lower bound of the fraction of support vectors relative to the total number of training examples. For example, if you set it to 0.05 you are guaranteed to find at most 5% of your training examples being misclassified (at the cost of a small margin, though) and at least 5% of your training examples being support vectors.
+        paramPointBuilder.nu = 0.005F; // The parameter nu is an upper bound on the fraction of margin errors and a lower bound of the fraction of support vectors relative to the total number of training examples. For example, if you set it to 0.05 you are guaranteed to find at most 5% of your training examples being misclassified (at the cost of a small margin, though) and at least 5% of your training examples being support vectors.
         paramPointBuilder.eps = 0.00001F;
         ImmutableSvmParameterPoint param = paramPointBuilder.build();
 
         // Problem, P = point, L = label
-        MutableOneClassProblemImpl problem = new MutableOneClassProblemImpl(3, Float.class);
-        Random rand = new Random();
         int samples = 100;
+        MutableOneClassProblemImpl problem = new MutableOneClassProblemImpl(samples, Float.class);
+        Random rand = new Random();
         for (int i = 0; i < samples; i++) {
             SparseVector v = new SparseVector(1);
             v.indexes[0] = rand.nextInt(500);
