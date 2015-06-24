@@ -247,19 +247,19 @@ public class IntervalInterceptorModel {
                         maxK = kv.getKey();
                     }
                 }
+                // Parse match
+                String[] split = maxK.split("_");
+                int length = Integer.parseInt(split[0].substring(1));
+                int interval = Integer.parseInt(split[1].substring(1));
 
-                // Minimum occurence to quailify as possible pattern (something that happened once or twice is random-ish)
+                // Coverage
+                int totalPatternLength = length*interval*maxOccurence;
+                double totalPatternCoverage = (double)totalPatternLength / (double)(data.lastKey() - data.firstKey());
+                debug("Total pattern coverage " + totalPatternCoverage + " (" + totalPatternCoverage*100 + "%)");
+
+                // Minimum occurence to qualify as possible pattern (something that happened once or twice is random-ish, unless it covers almost all data)
                 int occurenceThreshold = 3;
-                if (maxOccurence >= occurenceThreshold) {
-                    // Parse match
-                    String[] split = maxK.split("_");
-                    int length = Integer.parseInt(split[0].substring(1));
-                    int interval = Integer.parseInt(split[1].substring(1));
-
-                    // Coverage
-                    int totalPatternLength = length*interval*maxOccurence;
-                    double totalPatternCoverage = (double)totalPatternLength / (double)(data.lastKey() - data.firstKey());
-                    debug("Total pattern coverage " + totalPatternCoverage + " (" + totalPatternCoverage*100 + "%)");
+                if (maxOccurence >= occurenceThreshold || totalPatternCoverage > 0.5) {
 
                     // Match
                     if (totalPatternCoverage > MIN_PATTERN_COVERAGE) {

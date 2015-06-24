@@ -11,6 +11,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     private HashMap<String, Timeseries> timeseries;
     private List<Long> expectedErrors;
     private List<TimeserieOutlier> outliers;
+    private List<TimeserieInlier> inliers;
     public final int LOG_ERROR = 1;
     public final int LOG_WARN = 2;
     public final int LOG_NOTICE = 3;
@@ -26,6 +27,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         timeseries = new HashMap<String, Timeseries>();
         expectedErrors = new ArrayList<Long>();
         outliers = new ArrayList<TimeserieOutlier>();
+        inliers = new ArrayList<TimeserieInlier>();
     }
 
     public void log(int type, String className, String msg) {
@@ -58,13 +60,16 @@ public abstract class AbstractDataLoader implements IDataLoader {
         outliers.clear();
         int activeAnalyzers = 0;
         for (ITimeserieAnalyzer analyzer : analyzers) {
-            List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(this, timeseries).getOutliers();
-            if (analyzerOutliers == null) {
+            TimeserieAnalyzerResult res = analyzer.analyze(this, timeseries);
+            List<TimeserieOutlier> analyzerOutliers = res.getOutliers();
+            List<TimeserieInlier> analyzerInliers = res.getInliers();
+            if (analyzerOutliers.isEmpty() && analyzerInliers.isEmpty()) {
                 // Not active
                 continue;
             }
             activeAnalyzers++;
             outliers.addAll(analyzerOutliers);
+            inliers.addAll(analyzerInliers);
         }
         if (activeAnalyzers < 1) {
             log(LOG_ERROR, getClass().getSimpleName(), "No analyzers were taken into account");
