@@ -50,7 +50,7 @@ public class OneClassSVMTimeserieAnalyzer extends AbstractTimeserieAnalyzer impl
             // SVM: The range of C is from zero to infinity but nu is always between [0,1]. A nice property of nu is that it is related to the ratio of support vectors and the ratio of the training error.
             OneClassSVC svm = new OneClassSVC();
 
-            // Scale problem
+            // Scale problem, disabled as we only have one real dimension, so there will be no dominant features
             OneClassProblem scaledProblem = problem.getScaledCopy(new NoopScalingModelLearner());
 
             // Train
