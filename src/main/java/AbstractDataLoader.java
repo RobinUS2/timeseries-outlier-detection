@@ -263,7 +263,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
             } else {
                 unexpectedErrors.put(o.getTs(), unexpectedErrors.get(o.getTs()) + 1);
             }
-            log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > " + o.getVal() + " < " + o.getRightBound());
+            log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > is " + o.getVal() + " expected " + o.getExpectedVal() + " < " + o.getRightBound());
         }
         if (unexpectedErrors.size() > 0) {
             log(LOG_ERROR, getClass().getSimpleName(), "Unexpected errors " + unexpectedErrors.toString());

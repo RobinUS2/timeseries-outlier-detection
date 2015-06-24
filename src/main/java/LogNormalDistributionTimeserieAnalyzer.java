@@ -52,7 +52,7 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
                 double rightBound = avg + maxErr;
                 double leftBound = avg - maxErr;
                 if (val < leftBound || val > rightBound) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), val, leftBound, rightBound);
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), val, avg, leftBound, rightBound);
                     if (!kv.getValue().validateOutlier(outlier)) {
                         continue;
                     }
