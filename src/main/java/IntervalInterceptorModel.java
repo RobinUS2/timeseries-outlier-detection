@@ -314,7 +314,7 @@ public class IntervalInterceptorModel {
         // Use as low regression?
         useLowRegression = false;
         if (nonPatternRegression.getSlopeStdErr() < stdDev) {
-            debug("using low regression");
+            debug("enabled low regression");
             useLowRegression = true;
         }
 
