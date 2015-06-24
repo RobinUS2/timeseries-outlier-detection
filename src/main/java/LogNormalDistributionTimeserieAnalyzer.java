@@ -7,8 +7,10 @@ import java.util.Map;
  * Created by robin on 21/06/15.
  */
 public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
-    public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
-        List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
+    public TimeserieAnalyzerResult analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
+        TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();
+
+        // Iterate series
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
             // Average
             double total = 0.0D;
@@ -49,18 +51,20 @@ public class LogNormalDistributionTimeserieAnalyzer extends AbstractTimeserieAna
             double maxErr = Math.max(maxStdDevMp * stdDev, 0.05 * avg); // 1x std deviation or 5% of average
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataClassify().entrySet()) {
                 double val = convertValue(tskv.getValue());
-                double rightBound = avg + maxErr;
-                double leftBound = avg - maxErr;
-                if (val < leftBound || val > rightBound) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), val, avg, leftBound, rightBound);
+                double rb = avg + maxErr;
+                double lb = avg - maxErr;
+                if (val < lb || val > rb) {
+                    TimeserieOutlier outlier = new TimeserieOutlier(this.getClass().getSimpleName(), tskv.getKey(), val, avg, lb, rb);
                     if (!kv.getValue().validateOutlier(outlier)) {
                         continue;
                     }
-                    outliers.add(outlier);
+                    res.addOutlier(outlier);
+                } else {
+                    res.addInlier(new TimeserieInlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), avg, lb, rb));
                 }
             }
         }
-        return outliers;
+        return res;
     }
 
     public double convertValue(double in) {

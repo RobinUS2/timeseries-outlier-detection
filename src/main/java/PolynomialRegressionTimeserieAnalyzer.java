@@ -12,8 +12,10 @@ import java.util.Map;
  * Created by robin on 21/06/15.
  */
 public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
-    public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
-        List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
+    public TimeserieAnalyzerResult analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
+        TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();
+
+        // Iterate series
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
             PolynomialRegressionModel m = new PolynomialRegressionModel("ts");
 
@@ -81,11 +83,13 @@ public class PolynomialRegressionTimeserieAnalyzer extends AbstractTimeserieAnal
                     if (!kv.getValue().validateOutlier(outlier)) {
                         continue;
                     }
-                    outliers.add(outlier);
+                    res.addOutlier(outlier);
+                } else {
+                    res.addInlier(new TimeserieInlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), expectedVal, lb, rb));
                 }
             }
 
         }
-        return outliers;
+        return res;
     }
 }

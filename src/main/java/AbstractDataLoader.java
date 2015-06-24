@@ -58,7 +58,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         outliers.clear();
         int activeAnalyzers = 0;
         for (ITimeserieAnalyzer analyzer : analyzers) {
-            List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(this, timeseries);
+            List<TimeserieOutlier> analyzerOutliers = analyzer.analyze(this, timeseries).getOutliers();
             if (analyzerOutliers == null) {
                 // Not active
                 continue;

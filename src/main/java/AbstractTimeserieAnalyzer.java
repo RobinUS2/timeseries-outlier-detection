@@ -5,4 +5,8 @@ public class AbstractTimeserieAnalyzer {
     public void log (String msg) {
         System.out.println(msg);
     }
+
+    public TimeserieAnalyzerResult newResultSet() {
+        return new TimeserieAnalyzerResult();
+    }
 }

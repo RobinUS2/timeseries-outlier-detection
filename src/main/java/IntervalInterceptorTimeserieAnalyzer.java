@@ -10,8 +10,10 @@ import java.util.Map;
  * Created by robin on 21/06/15.
  */
 public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
-    public List<TimeserieOutlier> analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
-        List<TimeserieOutlier> outliers = new ArrayList<TimeserieOutlier>();
+    public TimeserieAnalyzerResult analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
+        TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();
+
+        // Iterate series
         for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
             try {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), kv.getKey());
@@ -56,14 +58,15 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                         if (!kv.getValue().validateOutlier(outlier)) {
                             continue;
                         }
-                        outliers.add(outlier);
+                        res.addOutlier(outlier);
+                    } else {
+                        res.addInlier(new TimeserieInlier(this.getClass().getSimpleName(), tskv.getKey(), tskv.getValue(), expectedVal, lb, rb));
                     }
                 }
             } catch (Exception e) {
                 dataLoader.log(dataLoader.LOG_ERROR, getClass().getSimpleName(), e.getMessage());
             }
         }
-        // @todo also return values that were classified as OK, so we can mute errors if one model says A and one model says B
-        return outliers;
+        return res;
     }
 }
