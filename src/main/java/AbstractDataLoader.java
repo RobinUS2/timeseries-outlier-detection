@@ -148,6 +148,39 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
         // Derive timeseries
         _deriveErrorRate();
+
+        // Auto normalize data based on best practices
+        _autoNormalizeData();
+    }
+
+    protected void _autoNormalizeData() throws Exception {
+        if (valueNormalizationMode != ValueNormalizationModes.NONE) {
+            return;
+        }
+        for (Timeseries ts : timeseries.values()) {
+            double minMaxDelta = ts.getTrainMaxVal() - ts.getTrainMinVal();
+            if (minMaxDelta >= 1000D) {
+                // More than X absolute difference between min, max, apply log normalization
+                log(LOG_INFO, getClass().getSimpleName(), "normalizing data");
+                log(LOG_DEBUG, getClass().getSimpleName(), "max-min value delta " + minMaxDelta);
+                _printTimeserieDebug(ts);
+
+                // Normalize points
+                TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
+                for (Map.Entry<Long, Double> rts : ts.getData().entrySet()) {
+                    sortedMap.put(rts.getKey(), normalizeValue(ValueNormalizationModes.LOG, rts.getValue()));
+                }
+                ts.setData(sortedMap);
+                _printTimeserieDebug(ts);
+            }
+        }
+    }
+
+    protected void _printTimeserieDebug(Timeseries ts) {
+        log(LOG_DEBUG, getClass().getSimpleName(), "min value " + ts.getTrainMinVal());
+        log(LOG_DEBUG, getClass().getSimpleName(), "max value " + ts.getTrainMaxVal());
+        log(LOG_DEBUG, getClass().getSimpleName(), "avg value " + ts.getTrainAvg());
+        log(LOG_DEBUG, getClass().getSimpleName(), "stddev value " + ts.getTrainStdDev());
     }
 
     protected void _deriveErrorRate() throws Exception {
@@ -268,8 +301,8 @@ public abstract class AbstractDataLoader implements IDataLoader {
         log(LOG_DEBUG, getClass().getSimpleName(), expectedErrors.toString());
     }
 
-    public double normalizeValue(double in) {
-        switch (valueNormalizationMode) {
+    public double normalizeValue(ValueNormalizationModes mode, double in) {
+        switch (mode) {
             case LOG:
                 if (in < 1 / Double.MAX_VALUE) {
                     return 0;
@@ -290,6 +323,10 @@ public abstract class AbstractDataLoader implements IDataLoader {
                 // None
                 return in;
         }
+    }
+
+    public double normalizeValue(double in) {
+        return normalizeValue(valueNormalizationMode, in);
     }
 
 }

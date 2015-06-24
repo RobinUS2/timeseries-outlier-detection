@@ -11,6 +11,8 @@ public class Timeseries {
     private TreeMap<Long, Double> classifyData;
     private double trainAvg;
     private double trainStdDev;
+    private double trainMinVal;
+    private double trainMaxVal;
     private long datapoints;
     private final double TRAIN_CLASSIFY_SPLIT = 0.7D;
     private long maxClassifyPoints;
@@ -71,6 +73,8 @@ public class Timeseries {
         // Clear previously cached data sets
         trainAvg = Double.NaN;
         trainStdDev = Double.NaN;
+        trainMinVal = Double.NaN;
+        trainMaxVal = Double.NaN;
         trainData = null;
         classifyData = null;
 
@@ -111,10 +115,18 @@ public class Timeseries {
     }
 
     protected void _computeTrainStatics() {
-        // Avg
+        // Avg, min, max
+        trainMaxVal = Double.MIN_VALUE;
+        trainMinVal = Double.MAX_VALUE;
         double total = 0.0D;
         for (double val : trainData.values()) {
             total += val;
+            if (val > trainMaxVal) {
+                trainMaxVal = val;
+            }
+            if (val < trainMinVal) {
+                trainMinVal = val;
+            }
         }
         trainAvg = total / (double)trainData.size();
 
@@ -171,6 +183,10 @@ public class Timeseries {
     public double getTrainStdDev() {
         return trainStdDev;
     }
+
+    public double getTrainMinVal() { return trainMinVal; }
+
+    public double getTrainMaxVal() { return trainMaxVal; }
 
     public SortedMap<Long, Double> getDataClassify() {
         if (classifyData != null) {
