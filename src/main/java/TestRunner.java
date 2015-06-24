@@ -39,6 +39,7 @@ public class TestRunner {
         analyzers.add(new IntervalInterceptorTimeserieAnalyzer());
         analyzers.add(new RandomWalkRegressionTimeserieAnalyzer());
         analyzers.add(new OneClassSVMTimeserieAnalyzer());
+        analyzers.add(new TimeBucketSimpleRegressionTimeserieAnalyzer());
 
         // Load
         AbstractDataLoader dl;
