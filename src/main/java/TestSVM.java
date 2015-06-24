@@ -26,14 +26,14 @@ public class TestSVM {
         ImmutableSvmParameterPoint param = paramPointBuilder.build();
 
         // Problem, P = point, L = label
-        int samples = 100;
+        int samples = 1000;
         MutableOneClassProblemImpl problem = new MutableOneClassProblemImpl(samples, Float.class);
         Random rand = new Random();
         for (int i = 0; i < samples; i++) {
             SparseVector v = new SparseVector(1);
-            v.indexes[0] = rand.nextInt(500);
+            v.indexes[0] = 1;
             v.values[0] = rand.nextInt(500);
-            problem.addExample(v, 1.0F);
+            problem.addExampleFloat(v, rand.nextFloat());
         }
 
         // SVM: The range of C is from zero to infinity but nu is always between [0,1]. A nice property of nu is that it is related to the ratio of support vectors and the ratio of the training error.
@@ -46,9 +46,9 @@ public class TestSVM {
         OneClassModel model = (OneClassModel) svm.train(scaledProblem, param);
 
         // Predict
-        for (int i = 0; i < 100; i++) {
-            SparseVector vp = new SparseVector(1);
-            vp.indexes[0] = rand.nextInt(500);
+        SparseVector vp = new SparseVector(1);
+        vp.indexes[0] = 1;
+        for (int i = 0; i < samples; i++) {
             vp.values[0] = rand.nextInt(500);
             double prob = model.predictValue(vp);
             System.out.println(prob);
