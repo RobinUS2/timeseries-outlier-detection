@@ -268,22 +268,30 @@ public abstract class AbstractDataLoader implements IDataLoader {
             } else {
                 unexpectedErrors.put(o.getTs(), unexpectedErrors.get(o.getTs()) + 1);
             }
-            log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > is " + o.getVal() + " expected " + o.getExpectedVal() + " < " + o.getRightBound());
+            log(LOG_NOTICE, getClass().getSimpleName(), "Found unexpected error at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > is " + o.getVal() + " expected " + o.getExpectedVal() + " < " + o.getRightBound());
         }
         if (unexpectedErrors.size() > 0) {
-            log(LOG_ERROR, getClass().getSimpleName(), "Unexpected errors " + unexpectedErrors.toString());
+            log(LOG_NOTICE, getClass().getSimpleName(), "Unexpected errors " + unexpectedErrors.toString());
 
             // Unexpected errors in inliers list?
             HashMap<Long, Integer> unexpectedErrorsSubInliers = new HashMap<Long, Integer>(unexpectedErrors);
             for (Long outlierTs : unexpectedErrors.keySet()) {
                 for (TimeserieInlier inlier : inliers) {
                     if (inlier.getTs() == outlierTs) {
-                        log(LOG_ERROR, getClass().getSimpleName(), "Unexpected error at " + outlierTs + " denied by by " + inlier.getAnalyzerName() + " " + inlier.getLeftBound() + " > is " + inlier.getVal() + " expected " + inlier.getExpectedVal() + " < " + inlier.getRightBound());
+                        log(LOG_NOTICE, getClass().getSimpleName(), "Unexpected error at " + outlierTs + " denied by by " + inlier.getAnalyzerName() + " " + inlier.getLeftBound() + " > is " + inlier.getVal() + " expected " + inlier.getExpectedVal() + " < " + inlier.getRightBound());
                         unexpectedErrorsSubInliers.put(outlierTs, unexpectedErrorsSubInliers.get(outlierTs)-1);
                     }
                 }
             }
-            log(LOG_ERROR, getClass().getSimpleName(), "Unexpected errors minus inliers " + unexpectedErrorsSubInliers.toString());
+            log(LOG_NOTICE, getClass().getSimpleName(), "Unexpected errors minus inliers " + unexpectedErrorsSubInliers.toString());
+
+            // Real unexpected errors
+            for (Map.Entry<Long, Integer> kv : unexpectedErrorsSubInliers.entrySet()) {
+                if (kv.getValue() < 1) {
+                    continue;
+                }
+                log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + kv.getKey() + " net score " + kv.getValue());
+            }
         }
     }
 
