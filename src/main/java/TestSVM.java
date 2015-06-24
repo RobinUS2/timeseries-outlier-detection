@@ -31,9 +31,9 @@ public class TestSVM {
         Random rand = new Random();
         for (int i = 0; i < samples; i++) {
             SparseVector v = new SparseVector(1);
-            v.indexes[0] = 1;
-            v.values[0] = rand.nextInt(500);
-            problem.addExampleFloat(v, rand.nextFloat());
+            v.indexes[0] = rand.nextInt(10) + 20;
+            v.values[0] = rand.nextInt(10);
+            problem.addExampleFloat(v, 1.0F);
         }
 
         // SVM: The range of C is from zero to infinity but nu is always between [0,1]. A nice property of nu is that it is related to the ratio of support vectors and the ratio of the training error.
@@ -47,11 +47,15 @@ public class TestSVM {
 
         // Predict
         SparseVector vp = new SparseVector(1);
-        vp.indexes[0] = 1;
+        //vp.indexes[0] = 1;
         for (int i = 0; i < samples; i++) {
-            vp.values[0] = rand.nextInt(500);
+            vp.indexes[0] = rand.nextInt(100);
+            vp.values[0] = rand.nextInt(100);
             double prob = model.predictValue(vp);
-            System.out.println(prob);
+            if (prob > 0) {
+                System.out.println(vp.indexes[0] + " " + vp.values[0]);
+                System.out.println(prob);
+            }
         }
     }
 }
