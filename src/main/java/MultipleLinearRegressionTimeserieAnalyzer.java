@@ -1,11 +1,6 @@
 import net.sourceforge.openforecast.DataSet;
-import net.sourceforge.openforecast.Forecaster;
-import net.sourceforge.openforecast.ForecastingModel;
 import net.sourceforge.openforecast.Observation;
-import net.sourceforge.openforecast.models.DoubleExponentialSmoothingModel;
 import net.sourceforge.openforecast.models.MultipleLinearRegressionModel;
-import net.sourceforge.openforecast.models.PolynomialRegressionModel;
-import net.sourceforge.openforecast.models.TripleExponentialSmoothingModel;
 
 import java.util.HashMap;
 import java.util.Map;

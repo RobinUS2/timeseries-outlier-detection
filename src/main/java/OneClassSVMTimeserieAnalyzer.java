@@ -1,8 +1,6 @@
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
 import edu.berkeley.compbio.jlibsvm.kernel.GaussianRBFKernel;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
-import edu.berkeley.compbio.jlibsvm.kernel.LinearKernel;
-import edu.berkeley.compbio.jlibsvm.kernel.SigmoidKernel;
 import edu.berkeley.compbio.jlibsvm.oneclass.MutableOneClassProblemImpl;
 import edu.berkeley.compbio.jlibsvm.oneclass.OneClassModel;
 import edu.berkeley.compbio.jlibsvm.oneclass.OneClassProblem;

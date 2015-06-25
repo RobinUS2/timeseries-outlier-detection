@@ -1,12 +1,8 @@
-import net.sourceforge.openforecast.DataPoint;
 import net.sourceforge.openforecast.DataSet;
 import net.sourceforge.openforecast.Observation;
 import net.sourceforge.openforecast.models.MovingAverageModel;
-import net.sourceforge.openforecast.models.WeightedMovingAverageModel;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

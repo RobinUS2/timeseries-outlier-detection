@@ -1,7 +1,4 @@
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by robin on 21/06/15.
