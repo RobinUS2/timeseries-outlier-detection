@@ -52,12 +52,61 @@ public class TestRunner {
             dl.validate();
         }
 
-        // Test mutable
-        MutableDataLoader mdl = new MutableDataLoader("MyMutableTestt");
+        // Random tests
+        _mutableRandom(analyzers);
+        _mutableIncrement(analyzers);
+        _mutableIntervals(analyzers);
+    }
+
+    protected void _mutableRandom(List<ITimeserieAnalyzer> analyzers) throws Exception {
+        // Test mutable random
+        MutableDataLoader mdl = new MutableDataLoader("mutable_random");
         String serieName = "serieA";
         Random rand = new Random();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
             mdl.addData(serieName, String.valueOf(i), String.valueOf(50 + rand.nextInt(5))); // 10% random
+        }
+
+        // Settings
+        mdl.setForecastPeriods(1);
+        mdl.setDesiredTimeResolution(1);
+
+        // Execute
+        mdl.load();
+        mdl.analyze(analyzers);
+        mdl.validate();
+    }
+
+    protected void _mutableIncrement(List<ITimeserieAnalyzer> analyzers) throws Exception {
+        // Test mutable random
+        MutableDataLoader mdl = new MutableDataLoader("mutable_increment");
+        String serieName = "serieA";
+        Random rand = new Random();
+        for (int i = 0; i < 50; i++) {
+            mdl.addData(serieName, String.valueOf(i), String.valueOf(10 + i + rand.nextInt(3))); // steady increase, some noise
+        }
+
+        // Settings
+        mdl.setForecastPeriods(1);
+        mdl.setDesiredTimeResolution(1);
+
+        // Execute
+        mdl.load();
+        mdl.analyze(analyzers);
+        mdl.validate();
+    }
+
+    protected void _mutableIntervals(List<ITimeserieAnalyzer> analyzers) throws Exception {
+        // Test mutable random
+        MutableDataLoader mdl = new MutableDataLoader("mutable_intervals");
+        String serieName = "serieA";
+        Random rand = new Random();
+        for (int i = 0; i < 50; i++) {
+            double val = rand.nextInt(5);
+            if (i % 4 == 0) {
+                val = val + 10 + rand.nextInt(5);
+            }
+            mdl.addData(serieName, String.valueOf(i), String.valueOf(val)); // noisy base, noisy peaks
         }
 
         // Settings
