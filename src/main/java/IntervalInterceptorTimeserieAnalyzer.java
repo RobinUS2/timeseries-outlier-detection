@@ -5,7 +5,7 @@ import java.util.Map;
  * Created by robin on 21/06/15.
  */
 public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
-    protected int INLIER_SCORE = 3; // Overrides the default, this model is likely to detect regular peaks, which might seem weird to other models
+    protected int INLIER_SCORE = AbstractTimeserieAnalyzer.DEFAULT_INLIER_SCORE * 3; // Overrides the default, this model is likely to detect regular peaks, which might seem weird to other models
 
     public TimeserieAnalyzerResult analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();
