@@ -16,7 +16,11 @@ import java.util.Map;
  */
 public class OneClassSVMTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
     private static final double MIN_VALIDATION_RATE = 0.9;
-    protected int INLIER_SCORE = AbstractTimeserieAnalyzer.DEFAULT_INLIER_SCORE * 3; // Overrides the default, this model is not used often, but if it is, it is reliable mostly for inliers
+
+    public int getInlierScore() {
+        // Overrides the default, this model is not used often, but if it is, it is reliable mostly for inliers
+        return DEFAULT_INLIER_SCORE * 3;
+    }
 
     public TimeserieAnalyzerResult analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();

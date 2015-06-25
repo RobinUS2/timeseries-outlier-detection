@@ -5,7 +5,11 @@ import java.util.Map;
  * Created by robin on 21/06/15.
  */
 public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnalyzer implements ITimeserieAnalyzer {
-    protected int INLIER_SCORE = AbstractTimeserieAnalyzer.DEFAULT_INLIER_SCORE * 3; // Overrides the default, this model is likely to detect regular peaks, which might seem weird to other models
+
+    public int getInlierScore() {
+        // Overrides the default, this model is likely to detect regular peaks, which might seem weird to other models
+        return DEFAULT_INLIER_SCORE * 3;
+    }
 
     public TimeserieAnalyzerResult analyze(AbstractDataLoader dataLoader, HashMap<String, Timeseries> timeseries) {
         TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();
@@ -34,7 +38,7 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                 }
 
                 // Reliable?
-                double maxMse = 0.05; // 95% = 0.05
+                double maxMse = 0.10; // 95% = 0.05
                 double relMse = r.getMeanSquareError() / r.getTotalSumSquares();
                 if (relMse > maxMse) {
                     dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");

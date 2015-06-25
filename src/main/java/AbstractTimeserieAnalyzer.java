@@ -11,6 +11,12 @@ public class AbstractTimeserieAnalyzer {
     }
     protected static final int DEFAULT_INLIER_SCORE = 1;
     protected static final int DEFAULT_OUTLIER_SCORE = 3;
-    protected int INLIER_SCORE = AbstractTimeserieAnalyzer.DEFAULT_INLIER_SCORE; // Decrements the score if an inlier is found
-    protected int OUTLIER_SCORE = AbstractTimeserieAnalyzer.DEFAULT_OUTLIER_SCORE; // Increments the score if an outlier is found
+
+    public int getInlierScore() {
+        return DEFAULT_INLIER_SCORE;
+    }
+
+    public int getOutlierScore() {
+        return DEFAULT_OUTLIER_SCORE;
+    }
 }

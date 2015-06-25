@@ -250,12 +250,12 @@ public abstract class AbstractDataLoader implements IDataLoader {
         HashMap<Long, Integer> outliersCount = new HashMap<Long, Integer>();
         for (TimeserieOutlier o : outliers) {
             log(LOG_DEBUG, getClass().getSimpleName(), "Outlier at " + o.getTs() + " found by " + o.getAnalyzerName());
-            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) + o.getAnalyzer().OUTLIER_SCORE);
+            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) + o.getAnalyzer().getOutlierScore());
             outliersCount.put(o.getTs(), outliersCount.getOrDefault(o.getTs(), 0) + 1);
         }
         for (TimeserieInlier o : inliers) {
             log(LOG_DEBUG, getClass().getSimpleName(), "Inlier at " + o.getTs() + " found by " + o.getAnalyzerName());
-            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) - o.getAnalyzer().INLIER_SCORE);
+            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) - o.getAnalyzer().getInlierScore());
         }
 
         // Did we find the expected ones?
