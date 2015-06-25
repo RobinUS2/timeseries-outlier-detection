@@ -42,6 +42,7 @@ public class TestRunner {
         analyzers.add(new OneClassSVMTimeserieAnalyzer());
         analyzers.add(new TimeBucketSimpleRegressionTimeserieAnalyzer());
         analyzers.add(new MultipleLinearRegressionTimeserieAnalyzer());
+        analyzers.add(new SimpleExponentialSmoothingTimeserieAnalyzer());
 
         // Load
         AbstractDataLoader dl;
@@ -104,7 +105,7 @@ public class TestRunner {
         for (int i = 0; i < 50; i++) {
             double val = rand.nextInt(5);
             if (i % 4 == 0) {
-                val = val + 10 + rand.nextInt(5);
+                val = val + 20 + rand.nextInt(3);
             }
             mdl.addData(serieName, String.valueOf(i), String.valueOf(val)); // noisy base, noisy peaks
         }

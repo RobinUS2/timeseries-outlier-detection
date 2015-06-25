@@ -7,9 +7,9 @@ public class TimeserieOutlier {
     private final double valLeftBound;
     private final double valRightBound;
     private final double expectedValue;
-    private final ITimeserieAnalyzer analyzer;
+    private final AbstractTimeserieAnalyzer analyzer;
 
-    public TimeserieOutlier(ITimeserieAnalyzer analyzer, long ts, double val, double expectedValue, double valLeftBound, double valRightBound) {
+    public TimeserieOutlier(AbstractTimeserieAnalyzer analyzer, long ts, double val, double expectedValue, double valLeftBound, double valRightBound) {
         this.analyzer = analyzer;
         this.ts = ts;
         this.val = val;
@@ -20,6 +20,10 @@ public class TimeserieOutlier {
 
     public long getTs() {
         return ts;
+    }
+
+    public AbstractTimeserieAnalyzer getAnalyzer() {
+        return analyzer;
     }
 
     public String getAnalyzerName() {
