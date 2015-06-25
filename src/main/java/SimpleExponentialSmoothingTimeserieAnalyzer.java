@@ -46,7 +46,7 @@ public class SimpleExponentialSmoothingTimeserieAnalyzer extends AbstractTimeser
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean absolute deviation = " + m.getMAD());// Reliable?
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Mean absolute percentage error = " + m.getMAPE());// Reliable?
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Akaike Information Criteria = " + m.getAIC());// Reliable? less is better
-            double maxMse = 0.02; // 95% = 0.05
+            double maxMse = 0.05; // 95% = 0.05
             double relMse = mse / tsos;
             if (relMse > maxMse && tsos > 0D) {
                 dataLoader.log(dataLoader.LOG_NOTICE, getClass().getSimpleName(), "Unreliable based on relative mean square error crosscheck (is " + relMse + " exceeds " + maxMse + ")");
