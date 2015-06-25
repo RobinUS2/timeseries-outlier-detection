@@ -244,7 +244,14 @@ public abstract class AbstractDataLoader implements IDataLoader {
     }
 
     // Validate
-    public void validate() {
+    public ArrayList<ValidatedTimeserieOutlier> validate() {
+        return validate(1);
+    }
+
+    // Validate with custom minimum score
+    public ArrayList<ValidatedTimeserieOutlier> validate(int minScore) {
+        ArrayList<ValidatedTimeserieOutlier> validatedOutliers = new ArrayList<ValidatedTimeserieOutlier>();
+
         // Scored anomalies
         HashMap<Long, Integer> scoredOutliers = new HashMap<Long, Integer>();
         HashMap<Long, Integer> outliersCount = new HashMap<Long, Integer>();
@@ -272,14 +279,22 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
         // Real unexpected errors
         for (Map.Entry<Long, Integer> kv : scoredOutliers.entrySet()) {
-            if (kv.getValue() < 1) {
+            // Minimum score
+            if (kv.getValue() < minScore) {
                 continue;
             }
-            if (expectedErrors.contains(kv.getKey())) {
-                continue;
+
+            // Validated outlier
+            validatedOutliers.add(new ValidatedTimeserieOutlier(kv.getKey(), kv.getValue()));
+
+            // Expected errors are not shown as error message
+            if (!expectedErrors.contains(kv.getKey())) {
+                log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + kv.getKey() + " net score " + kv.getValue());
             }
-            log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + kv.getKey() + " net score " + kv.getValue());
         }
+
+        // List of outliers
+        return validatedOutliers;
     }
 
 
