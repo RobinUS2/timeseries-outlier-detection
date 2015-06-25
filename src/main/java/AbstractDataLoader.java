@@ -238,60 +238,40 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     // Validate
     public void validate() {
+        // Scored anomalies
+        HashMap<Long, Integer> scoredOutliers = new HashMap<Long, Integer>();
+        HashMap<Long, Integer> outliersCount = new HashMap<Long, Integer>();
+        for (TimeserieOutlier o : outliers) {
+            log(LOG_DEBUG, getClass().getSimpleName(), "Outlier at " + o.getTs() + " found by " + o.getAnalyzerName());
+            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) + 3);
+            outliersCount.put(o.getTs(), outliersCount.getOrDefault(o.getTs(), 0) + 1);
+        }
+        for (TimeserieInlier o : inliers) {
+            log(LOG_DEBUG, getClass().getSimpleName(), "Inlier at " + o.getTs() + " found by " + o.getAnalyzerName());
+            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) - 1);
+        }
+
         // Did we find the expected ones?
         for (Long expectedErr : expectedErrors) {
-            boolean found = false;
-            int matches = 0;
-            for (TimeserieOutlier o : outliers) {
-                if (expectedErr == o.getTs()) {
-                    // Found expected
-                    log(LOG_DEBUG, getClass().getSimpleName(), "Error at " + expectedErr + " found by " + o.getAnalyzerName());
-                    matches++;
-                }
-            }
-            log(LOG_DEBUG, getClass().getSimpleName(), "Error at " + expectedErr + " found " + matches + " time(s)");
+            int matches = outliersCount.get(expectedErr);
+            double score = scoredOutliers.get(expectedErr);
+            log(LOG_DEBUG, getClass().getSimpleName(), "Error at " + expectedErr + " found " + matches + " time(s) with score " + score);
 
             // Not found?
-            if (matches < 1) {
+            if (score < 1) {
                 log(LOG_ERROR, getClass().getSimpleName(), "Did not find error on " + expectedErr);
             }
         }
 
-        // Unexpected errors?
-        HashMap<Long, Integer> unexpectedErrors = new HashMap<Long, Integer>();
-        for (TimeserieOutlier o : outliers) {
-            if (expectedErrors.contains(o.getTs())) {
+        // Real unexpected errors
+        for (Map.Entry<Long, Integer> kv : scoredOutliers.entrySet()) {
+            if (kv.getValue() < 1) {
                 continue;
             }
-            if (!unexpectedErrors.containsKey(o.getTs())) {
-                unexpectedErrors.put(o.getTs(), 1);
-            } else {
-                unexpectedErrors.put(o.getTs(), unexpectedErrors.get(o.getTs()) + 1);
+            if (expectedErrors.contains(kv.getKey())) {
+                continue;
             }
-            log(LOG_NOTICE, getClass().getSimpleName(), "Found unexpected error at " + o.getTs() + " triggered by " + o.getAnalyzerName() + " " + o.getLeftBound() + " > is " + o.getVal() + " expected " + o.getExpectedVal() + " < " + o.getRightBound());
-        }
-        if (unexpectedErrors.size() > 0) {
-            log(LOG_NOTICE, getClass().getSimpleName(), "Unexpected errors " + unexpectedErrors.toString());
-
-            // Unexpected errors in inliers list?
-            HashMap<Long, Integer> unexpectedErrorsSubInliers = new HashMap<Long, Integer>(unexpectedErrors);
-            for (Long outlierTs : unexpectedErrors.keySet()) {
-                for (TimeserieInlier inlier : inliers) {
-                    if (inlier.getTs() == outlierTs) {
-                        log(LOG_NOTICE, getClass().getSimpleName(), "Unexpected error at " + outlierTs + " denied by by " + inlier.getAnalyzerName() + " " + inlier.getLeftBound() + " > is " + inlier.getVal() + " expected " + inlier.getExpectedVal() + " < " + inlier.getRightBound());
-                        unexpectedErrorsSubInliers.put(outlierTs, unexpectedErrorsSubInliers.get(outlierTs)-1);
-                    }
-                }
-            }
-            log(LOG_NOTICE, getClass().getSimpleName(), "Unexpected errors minus inliers " + unexpectedErrorsSubInliers.toString());
-
-            // Real unexpected errors
-            for (Map.Entry<Long, Integer> kv : unexpectedErrorsSubInliers.entrySet()) {
-                if (kv.getValue() < 1) {
-                    continue;
-                }
-                log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + kv.getKey() + " net score " + kv.getValue());
-            }
+            log(LOG_ERROR, getClass().getSimpleName(), "Found unexpected error at " + kv.getKey() + " net score " + kv.getValue());
         }
     }
 
