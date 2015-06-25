@@ -14,7 +14,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     public final int LOG_NOTICE = 3;
     public final int LOG_INFO = 4;
     public final int LOG_DEBUG = 5;
-    private final int LOGLEVEL = LOG_DEBUG;
+    private final int LOGLEVEL = LOG_INFO;
     private long targetTsStepResolution = 60; // Default, @todo configure
     private long forecastPeriods = 10; // Amount of periods to forecast, @todo configure
     private ValueNormalizationModes valueNormalizationMode = ValueNormalizationModes.NONE; // @todo Configure

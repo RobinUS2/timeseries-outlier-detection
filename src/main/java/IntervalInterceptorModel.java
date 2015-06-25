@@ -32,7 +32,7 @@ public class IntervalInterceptorModel {
         data = new TreeMap<Long, Double>();
         maxValue = Double.MIN_VALUE;
         minValue = Double.MAX_VALUE;
-        debugEnabled = true;
+        debugEnabled = false;
         traceEnabled = false;
         intervalPatterns = new ArrayList<IntervalPattern>();
     }
