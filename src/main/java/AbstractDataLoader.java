@@ -49,6 +49,16 @@ public abstract class AbstractDataLoader implements IDataLoader {
         }
     }
 
+    public void setForecastPeriods(int x) {
+        setConfig("forecast_periods", String.valueOf(x));
+        forecastPeriods = x;
+    }
+
+    public void setDesiredTimeResolution(int x) {
+        setConfig("desired_time_resolution", String.valueOf(x));
+        targetTsStepResolution = x;
+    }
+
     public String getConfig(String k, String d) {
         return settings.getOrDefault(k, d);
     }

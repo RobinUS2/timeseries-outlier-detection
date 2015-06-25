@@ -2,6 +2,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by robin on 21/06/15.
@@ -50,5 +51,22 @@ public class TestRunner {
             dl.analyze(analyzers);
             dl.validate();
         }
+
+        // Test mutable
+        MutableDataLoader mdl = new MutableDataLoader("MyMutableTestt");
+        String serieName = "serieA";
+        Random rand = new Random();
+        for (int i = 0; i < 20; i++) {
+            mdl.addData(serieName, String.valueOf(i), String.valueOf(50 + rand.nextInt(5))); // 10% random
+        }
+
+        // Settings
+        mdl.setForecastPeriods(1);
+        mdl.setDesiredTimeResolution(1);
+
+        // Execute
+        mdl.load();
+        mdl.analyze(analyzers);
+        mdl.validate();
     }
 }
