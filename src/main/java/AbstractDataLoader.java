@@ -258,7 +258,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
             log(LOG_DEBUG, getClass().getSimpleName(), "Error at " + expectedErr + " found " + matches + " time(s) with score " + score);
 
             // Not found?
-            if (score < 1) {
+            if (matches < 1) {
                 log(LOG_ERROR, getClass().getSimpleName(), "Did not find error on " + expectedErr);
             }
         }
