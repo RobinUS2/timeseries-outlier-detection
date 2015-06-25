@@ -14,10 +14,7 @@ public class SimpleExponentialSmoothingTimeserieAnalyzer extends AbstractTimeser
         TimeserieAnalyzerResult res = new TimeserieAnalyzerResult();
 
         // Iterate series
-        for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {
-            SimpleExponentialSmoothingModel m = new SimpleExponentialSmoothingModel(0.4);
-
-            // Create train dataset
+        for (Map.Entry<String, Timeseries> kv : timeseries.entrySet()) {// Create train dataset
             DataSet dsTrain = new DataSet();
             for (Map.Entry<Long, Double> tskv : kv.getValue().getDataTrain().entrySet()) {
                 long ts = tskv.getKey();
@@ -39,8 +36,9 @@ public class SimpleExponentialSmoothingTimeserieAnalyzer extends AbstractTimeser
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Average = " + avg);
             dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Total sum squares = " + tsos);
 
-            // Load data
-            m.init(dsTrain);
+            // Model
+            SimpleExponentialSmoothingModel m = SimpleExponentialSmoothingModel.getBestFitModel(dsTrain);
+            dataLoader.log(dataLoader.LOG_DEBUG, getClass().getSimpleName(), "Alpha = " + m.getAlpha());// Reliable?
 
             // Validate, total sum of squares must be bigger than 0 as else there is no delta between avg and data values
             double mse = m.getMSE();
