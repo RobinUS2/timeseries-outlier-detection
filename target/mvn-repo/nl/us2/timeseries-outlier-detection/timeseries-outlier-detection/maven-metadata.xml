@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>nl.us2.timeseries-outlier-detection</groupId>
+  <artifactId>timeseries-outlier-detection</artifactId>
+  <versioning>
+    <versions>
+      <version>1.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20150626115111</lastUpdated>
+  </versioning>
+</metadata>
