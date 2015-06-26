@@ -256,7 +256,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         HashMap<Long, Integer> scoredOutliers = new HashMap<Long, Integer>();
         HashMap<Long, Integer> outliersCount = new HashMap<Long, Integer>();
         for (TimeserieOutlier o : outliers) {
-            log(LOG_DEBUG, getClass().getSimpleName(), "Outlier at " + o.getTs() + " found by " + o.getAnalyzerName());
+            log(LOG_INFO, getClass().getSimpleName(), "Outlier at " + o.getTs() + " found by " + o.getAnalyzerName() + " magnitude " + o.getOutlierMagnitude());
             scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) + o.getAnalyzer().getOutlierScore());
             outliersCount.put(o.getTs(), outliersCount.getOrDefault(o.getTs(), 0) + 1);
         }

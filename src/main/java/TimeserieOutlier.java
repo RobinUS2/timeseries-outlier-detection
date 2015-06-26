@@ -44,4 +44,14 @@ public class TimeserieOutlier {
         return valRightBound;
     }
 
+    public double getOutlierMagnitude() {
+        if (val < valLeftBound) {
+            return 1.0 + Math.max(0.0D, Math.log(Math.abs((valLeftBound - val) / valLeftBound)));
+        }
+        if (val > valRightBound) {
+            return 1.0 + Math.max(0.0D, Math.log(Math.abs((valRightBound - val) / valRightBound)));
+        }
+        return 0.0D;
+    }
+
 }
