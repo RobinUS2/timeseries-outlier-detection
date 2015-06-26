@@ -10,6 +10,7 @@ public class TimeserieOutlier {
     private final double valRightBound;
     private final double expectedValue;
     private final AbstractTimeserieAnalyzer analyzer;
+    public static final double DEFAULT_OUTLIER_MAGNITUDE = 1.0D;
 
     public TimeserieOutlier(AbstractTimeserieAnalyzer analyzer, long ts, double val, double expectedValue, double valLeftBound, double valRightBound) {
         this.analyzer = analyzer;
@@ -47,14 +48,18 @@ public class TimeserieOutlier {
     }
 
     public double getOutlierMagnitude() {
+        double magnitude = DEFAULT_OUTLIER_MAGNITUDE;
         if (val < valLeftBound) {
-            return 1.0 + Math.max(0.0D, Math.log(Math.abs((valLeftBound - val) / valLeftBound)));
+            magnitude = DEFAULT_OUTLIER_MAGNITUDE + Math.max(0.0D, Math.log(Math.abs((valLeftBound - val) / valLeftBound)));
         }
         if (val > valRightBound) {
-            return 1.0 + Math.max(0.0D, Math.log(Math.abs((valRightBound - val) / valRightBound)));
+            magnitude = DEFAULT_OUTLIER_MAGNITUDE + Math.max(0.0D, Math.log(Math.abs((valRightBound - val) / valRightBound)));
         }
         // Default magnitude
-        return 1.0D;
+        if (Double.isInfinite(magnitude) || Double.isNaN(magnitude)) {
+            return DEFAULT_OUTLIER_MAGNITUDE;
+        }
+        return magnitude;
     }
 
 }
