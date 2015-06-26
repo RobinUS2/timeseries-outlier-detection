@@ -51,7 +51,8 @@ public class TimeserieOutlier {
         if (val > valRightBound) {
             return 1.0 + Math.max(0.0D, Math.log(Math.abs((valRightBound - val) / valRightBound)));
         }
-        return 0.0D;
+        // Default magnitude
+        return 1.0D;
     }
 
 }

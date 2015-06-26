@@ -253,16 +253,16 @@ public abstract class AbstractDataLoader implements IDataLoader {
         ArrayList<ValidatedTimeserieOutlier> validatedOutliers = new ArrayList<ValidatedTimeserieOutlier>();
 
         // Scored anomalies
-        HashMap<Long, Integer> scoredOutliers = new HashMap<Long, Integer>();
+        HashMap<Long, Double> scoredOutliers = new HashMap<Long, Double>();
         HashMap<Long, Integer> outliersCount = new HashMap<Long, Integer>();
         for (TimeserieOutlier o : outliers) {
             log(LOG_INFO, getClass().getSimpleName(), "Outlier at " + o.getTs() + " found by " + o.getAnalyzerName() + " magnitude " + o.getOutlierMagnitude());
-            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) + o.getAnalyzer().getOutlierScore());
+            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0D) + o.getAnalyzer().getOutlierScore() + o.getOutlierMagnitude());
             outliersCount.put(o.getTs(), outliersCount.getOrDefault(o.getTs(), 0) + 1);
         }
         for (TimeserieInlier o : inliers) {
             log(LOG_DEBUG, getClass().getSimpleName(), "Inlier at " + o.getTs() + " found by " + o.getAnalyzerName());
-            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0) - o.getAnalyzer().getInlierScore());
+            scoredOutliers.put(o.getTs(), scoredOutliers.getOrDefault(o.getTs(), 0D) - o.getAnalyzer().getInlierScore());
         }
 
         // Did we find the expected ones?
@@ -278,7 +278,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
         }
 
         // Real unexpected errors
-        for (Map.Entry<Long, Integer> kv : scoredOutliers.entrySet()) {
+        for (Map.Entry<Long, Double> kv : scoredOutliers.entrySet()) {
             // Minimum score
             if (kv.getValue() < minScore) {
                 continue;
