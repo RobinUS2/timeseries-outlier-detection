@@ -12,9 +12,11 @@ public class TimeserieOutlier {
     private final double valRightBound;
     private final double expectedValue;
     private final AbstractTimeserieAnalyzer analyzer;
+    private final String serieName;
     public static final double DEFAULT_OUTLIER_MAGNITUDE = 1.0D;
 
-    public TimeserieOutlier(AbstractTimeserieAnalyzer analyzer, long ts, double val, double expectedValue, double valLeftBound, double valRightBound) {
+    public TimeserieOutlier(AbstractTimeserieAnalyzer analyzer, String serieName, long ts, double val, double expectedValue, double valLeftBound, double valRightBound) {
+        this.serieName = serieName;
         this.analyzer = analyzer;
         this.ts = ts;
         this.val = val;
@@ -22,6 +24,8 @@ public class TimeserieOutlier {
         this.valRightBound = valRightBound;
         this.expectedValue = expectedValue;
     }
+
+    public String getSerieName() { return serieName; }
 
     public long getTs() {
         return ts;
@@ -69,6 +73,7 @@ public class TimeserieOutlier {
     }
     public JsonObject getJsonObjectWithDetails() {
         JsonObject o = new JsonObject();
+        o.addProperty("serie_name", getSerieName());
         o.addProperty("timestamp", getTs());
         o.addProperty("analyzer_name", getAnalyzerName());
         o.addProperty("measured_value", getVal());

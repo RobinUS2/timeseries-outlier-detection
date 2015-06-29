@@ -97,13 +97,13 @@ public class OneClassSVMTimeserieAnalyzer extends AbstractTimeserieAnalyzer impl
                 double prob = model.predictValue(vp);
                 if (prob < 0) {
                     // -1 is outlier
-                    TimeserieOutlier outlier = new TimeserieOutlier(this, tskv.getKey(), tskv.getValue(), Double.NaN, Double.NaN, Double.NaN);
+                    TimeserieOutlier outlier = new TimeserieOutlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), Double.NaN, Double.NaN, Double.NaN);
                     if (!kv.getValue().validateOutlier(outlier)) {
                         continue;
                     }
                     res.addOutlier(outlier);
                 } else {
-                    res.addInlier(new TimeserieInlier(this, tskv.getKey(), tskv.getValue(), Double.NaN, Double.NaN, Double.NaN));
+                    res.addInlier(new TimeserieInlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), Double.NaN, Double.NaN, Double.NaN));
                 }
             }
         }

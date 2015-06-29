@@ -35,13 +35,13 @@ public class NormalDistributionTimeserieAnalyzer extends AbstractTimeserieAnalyz
                 double rb = avg + maxErr;
                 double lb = avg - maxErr;
                 if (val < lb || val > rb) {
-                    TimeserieOutlier outlier = new TimeserieOutlier(this, tskv.getKey(), tskv.getValue(), avg, lb, rb);
+                    TimeserieOutlier outlier = new TimeserieOutlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), avg, lb, rb);
                     if (!kv.getValue().validateOutlier(outlier)) {
                         continue;
                     }
                     res.addOutlier(outlier);
                 } else {
-                    res.addInlier(new TimeserieInlier(this, tskv.getKey(), tskv.getValue(), avg, lb, rb));
+                    res.addInlier(new TimeserieInlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), avg, lb, rb));
                 }
             }
         }

@@ -96,7 +96,7 @@ public class TimeBucketSimpleRegressionTimeserieAnalyzer extends AbstractTimeser
                     double lb = expectedVal - maxErr;
                     if (val < lb || val > rb) {
                         // New outlier
-                        TimeserieOutlier outlier = new TimeserieOutlier(this, tskv.getKey(), tskv.getValue(), expectedVal, lb, rb);
+                        TimeserieOutlier outlier = new TimeserieOutlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), expectedVal, lb, rb);
                         if (!kv.getValue().validateOutlier(outlier)) {
                             continue;
                         }
@@ -107,7 +107,7 @@ public class TimeBucketSimpleRegressionTimeserieAnalyzer extends AbstractTimeser
                         outliers.add(tskv.getKey());
                         res.addOutlier(outlier);
                     } else {
-                        res.addInlier(new TimeserieInlier(this, tskv.getKey(), tskv.getValue(), expectedVal, lb, rb));
+                        res.addInlier(new TimeserieInlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), expectedVal, lb, rb));
                     }
                 }
             }

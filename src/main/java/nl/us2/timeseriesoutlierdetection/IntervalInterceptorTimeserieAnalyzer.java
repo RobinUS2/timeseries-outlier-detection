@@ -57,13 +57,13 @@ public class IntervalInterceptorTimeserieAnalyzer extends AbstractTimeserieAnaly
                     double lb = Math.min(expectedVal - kv.getValue().getTrainStdDev(), expectedVal * (1-maxRelDif));
                     double rb = Math.max(expectedVal + kv.getValue().getTrainStdDev(), expectedVal * (1+maxRelDif));
                     if (val < lb || val > rb) {
-                        TimeserieOutlier outlier = new TimeserieOutlier(this, tskv.getKey(), tskv.getValue(), expectedVal, lb, rb);
+                        TimeserieOutlier outlier = new TimeserieOutlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), expectedVal, lb, rb);
                         if (!kv.getValue().validateOutlier(outlier)) {
                             continue;
                         }
                         res.addOutlier(outlier);
                     } else {
-                        res.addInlier(new TimeserieInlier(this, tskv.getKey(), tskv.getValue(), expectedVal, lb, rb));
+                        res.addInlier(new TimeserieInlier(this, kv.getValue().getSerieName(), tskv.getKey(), tskv.getValue(), expectedVal, lb, rb));
                     }
                 }
             } catch (Exception e) {

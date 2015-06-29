@@ -97,7 +97,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
             String serieName = kv.getKey();
 
             // New serie
-            Timeseries timeserie = new Timeseries(forecastPeriods);
+            Timeseries timeserie = new Timeseries(serieName, forecastPeriods);
 
             // Iterate data points and convert to the right datatypes, while sorting them
             TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
@@ -205,7 +205,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     protected void _deriveErrorRate() throws Exception {
         if (timeseries.containsKey("regular") && timeseries.containsKey("error")) {
             log(LOG_DEBUG, getClass().getSimpleName(), "Deriving error rate timeseries");
-            Timeseries timeserie = new Timeseries(forecastPeriods);
+            Timeseries timeserie = new Timeseries("error_rate", forecastPeriods);
             TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
             for (Map.Entry<Long, Double> rts : timeseries.get("regular").getData().entrySet()) {
                 double regular = rts.getValue();

@@ -22,6 +22,7 @@ public class Timeseries {
     private long classifyDataPointsStart;
     private boolean alertOutlierOver = true;
     private boolean alertOutlierUnder = true;
+    private final String serieName;
 
     public boolean validateOutlier(TimeserieOutlier outlier) {
         if (outlier.getVal() < outlier.getLeftBound() && !alertOutlierUnder) {
@@ -35,9 +36,14 @@ public class Timeseries {
         return true;
     }
 
-    public Timeseries(long forecastPeriod) {
+    public Timeseries(String serieName, long forecastPeriod) {
+        this.serieName = serieName;
         data = new TreeMap<Long, Double>();
         maxClassifyPoints = forecastPeriod; // How many data points to forecast?
+    }
+
+    public String getSerieName() {
+        return serieName;
     }
 
     public void setAlertPolicy(boolean over, boolean under) {
