@@ -1,5 +1,7 @@
 package nl.us2.timeseriesoutlierdetection;
 
+import com.google.gson.JsonObject;
+
 /**
  * Created by robin on 21/06/15.
  */
@@ -59,7 +61,22 @@ public class TimeserieOutlier {
         if (Double.isInfinite(magnitude) || Double.isNaN(magnitude)) {
             return DEFAULT_OUTLIER_MAGNITUDE;
         }
+        // Magnitude can not be more than the regular score, effectively doubling the score
+        magnitude = Double.min(magnitude, getAnalyzer().getOutlierScore());
+
+        // Final score
         return magnitude;
+    }
+    public JsonObject getJsonObjectWithDetails() {
+        JsonObject o = new JsonObject();
+        o.addProperty("timestamp", getTs());
+        o.addProperty("analyzer_name", getAnalyzerName());
+        o.addProperty("measured_value", getVal());
+        o.addProperty("expected_value", getExpectedVal());
+        o.addProperty("expected_value_left_bound", getLeftBound());
+        o.addProperty("expected_value_right_bound", getRightBound());
+        o.addProperty("outlier_magnitude", getOutlierMagnitude());
+        return o;
     }
 
 }

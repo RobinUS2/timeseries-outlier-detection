@@ -1,5 +1,10 @@
 package nl.us2.timeseriesoutlierdetection;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 import java.util.*;
 
 /**
@@ -287,7 +292,47 @@ public abstract class AbstractDataLoader implements IDataLoader {
             }
 
             // Validated outlier
-            validatedOutliers.add(new ValidatedTimeserieOutlier(kv.getKey(), kv.getValue()));
+            ValidatedTimeserieOutlier vtso = new ValidatedTimeserieOutlier(kv.getKey(), kv.getValue());
+
+            // Details about the outliers
+            JsonObject details = new JsonObject();
+            JsonArray outlierDetails = new JsonArray();
+            for (TimeserieOutlier o : outliers) {
+                outlierDetails.add(o.getJsonObjectWithDetails());
+            }
+            details.add("outliers", outlierDetails);
+
+            // Data snapshot (last 10 data points)
+            int lastPoints = 10;
+            JsonObject dataSnapshot = new JsonObject();
+            for (Map.Entry<String, Timeseries> tskv : timeseries.entrySet()) {
+                JsonArray dps = new JsonArray();
+                // Get data in reverse order
+                NavigableSet<Long> dks = tskv.getValue().getData().descendingKeySet();
+
+                // First x points (which are actually the last x)
+                int i=0;
+                Iterator<Long> it = dks.iterator();
+                TreeMap<Long, Double> list = new TreeMap<Long, Double>();
+                while(i<lastPoints && it.hasNext()) {
+                    Long ts = it.next();
+                    list.put(ts, tskv.getValue().getData().get(ts));
+                    i++;
+                }
+                for (Double val : list.values()) {
+                    dps.add(new JsonPrimitive(val));
+                }
+
+                // Add points
+                dataSnapshot.add(tskv.getKey(), dps);
+            }
+            details.add("timeseries", dataSnapshot);
+
+            // Details
+            vtso.setDetails(details);
+
+            // Add to list of results
+            validatedOutliers.add(vtso);
 
             // Expected errors are not shown as error message
             if (!expectedErrors.contains(kv.getKey())) {

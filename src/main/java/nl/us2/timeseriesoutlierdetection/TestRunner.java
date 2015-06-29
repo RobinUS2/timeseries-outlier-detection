@@ -52,7 +52,10 @@ public class TestRunner {
             dl = new FileDataLoader(p);
             dl.load();
             dl.analyze(analyzers);
-            dl.validate();
+            ArrayList<ValidatedTimeserieOutlier> outliers = dl.validate();
+            for (ValidatedTimeserieOutlier outlier : outliers) {
+                System.out.println(outlier.getDetails().toString());
+            }
         }
 
         // Random tests
