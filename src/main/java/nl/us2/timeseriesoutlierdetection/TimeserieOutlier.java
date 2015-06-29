@@ -13,7 +13,7 @@ public class TimeserieOutlier {
     private final double expectedValue;
     private final AbstractTimeserieAnalyzer analyzer;
     private final String serieName;
-    public static final double DEFAULT_OUTLIER_MAGNITUDE = 1.0D;
+    public static final double DEFAULT_OUTLIER_MAGNITUDE = 0.0D;
 
     public TimeserieOutlier(AbstractTimeserieAnalyzer analyzer, String serieName, long ts, double val, double expectedValue, double valLeftBound, double valRightBound) {
         this.serieName = serieName;
