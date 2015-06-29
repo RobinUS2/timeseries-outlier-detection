@@ -204,6 +204,14 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     protected void _deriveErrorRate() throws Exception {
         if (timeseries.containsKey("regular") && timeseries.containsKey("error")) {
+            // Only run this if average numbers are higher than X (else it will be very noisy)
+            double minAvgTh = 10;
+            if (timeseries.get("regular").getTrainAvg() < minAvgTh || timeseries.get("error").getTrainAvg() < minAvgTh) {
+                log(LOG_DEBUG, getClass().getSimpleName(), "Not deriving error rate timeseries, averages below threshold of " + minAvgTh);
+                return;
+            }
+
+            // Derive error rates from series
             log(LOG_DEBUG, getClass().getSimpleName(), "Deriving error rate timeseries");
             Timeseries timeserie = new Timeseries("error_rate", forecastPeriods);
             TreeMap<Long, Double> sortedMap = new TreeMap<Long, Double>();
