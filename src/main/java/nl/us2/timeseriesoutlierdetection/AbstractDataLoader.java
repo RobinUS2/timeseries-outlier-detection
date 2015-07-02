@@ -1,11 +1,14 @@
 package nl.us2.timeseriesoutlierdetection;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by robin on 21/06/15.
@@ -16,6 +19,7 @@ public abstract class AbstractDataLoader implements IDataLoader {
     private List<Long> expectedErrors;
     private List<TimeserieOutlier> outliers;
     private List<TimeserieInlier> inliers;
+    private AtomicInteger activeAnalyzers;
     public final int LOG_ERROR = 1;
     public final int LOG_WARN = 2;
     public final int LOG_NOTICE = 3;
@@ -30,8 +34,9 @@ public abstract class AbstractDataLoader implements IDataLoader {
         settings = new HashMap<String, String>();
         timeseries = new HashMap<String, Timeseries>();
         expectedErrors = new ArrayList<Long>();
-        outliers = new ArrayList<TimeserieOutlier>();
-        inliers = new ArrayList<TimeserieInlier>();
+        outliers = Collections.synchronizedList(new ArrayList<TimeserieOutlier>());
+        inliers = Collections.synchronizedList(new ArrayList<TimeserieInlier>());
+        activeAnalyzers = new AtomicInteger();
     }
 
     public void log(int type, String className, String msg) {
@@ -70,22 +75,45 @@ public abstract class AbstractDataLoader implements IDataLoader {
         return settings.getOrDefault(k, d);
     }
 
-    public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers) {
+    // Concurrent run
+    public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers, int numThreads) throws InterruptedException {
+        // Reset
+        activeAnalyzers.set(0);
+        inliers.clear();
         outliers.clear();
-        int activeAnalyzers = 0;
-        for (ITimeserieAnalyzer analyzer : analyzers) {
-            TimeserieAnalyzerResult res = analyzer.analyze(this, timeseries);
-            List<TimeserieOutlier> analyzerOutliers = res.getOutliers();
-            List<TimeserieInlier> analyzerInliers = res.getInliers();
-            if (analyzerOutliers.isEmpty() && analyzerInliers.isEmpty()) {
-                // Not active
-                continue;
-            }
-            activeAnalyzers++;
-            outliers.addAll(analyzerOutliers);
-            inliers.addAll(analyzerInliers);
+
+        // Threadpool
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+        // Analyze
+        for (final ITimeserieAnalyzer analyzer : analyzers) {
+            executor.submit(new AnalyzerRunnable(this, analyzer));
         }
-        if (activeAnalyzers < 1) {
+
+        // Shutdown
+        executor.shutdown();
+        executor.awaitTermination(60, TimeUnit.SECONDS);
+
+        // Active?
+        if (activeAnalyzers.get() < 1) {
+            log(LOG_ERROR, getClass().getSimpleName(), "No analyzers were taken into account");
+        }
+        return outliers;
+    }
+
+    public List<TimeserieOutlier> analyze(List<ITimeserieAnalyzer> analyzers) {
+        // Reset
+        activeAnalyzers.set(0);
+        inliers.clear();
+        outliers.clear();
+
+        // Analyze
+        for (final ITimeserieAnalyzer analyzer : analyzers) {
+            new AnalyzerRunnable(this, analyzer).run();
+        }
+
+        // Active?
+        if (activeAnalyzers.get() < 1) {
             log(LOG_ERROR, getClass().getSimpleName(), "No analyzers were taken into account");
         }
         return outliers;
@@ -411,6 +439,29 @@ public abstract class AbstractDataLoader implements IDataLoader {
 
     public double normalizeValue(double in) {
         return normalizeValue(valueNormalizationMode, in);
+    }
+
+    private class AnalyzerRunnable implements Runnable {
+        private AbstractDataLoader adl;
+        private ITimeserieAnalyzer analyzer;
+
+        public AnalyzerRunnable(AbstractDataLoader adl, ITimeserieAnalyzer analyzer) {
+            this.adl = adl;
+            this.analyzer = analyzer;
+        }
+
+        public void run() {
+            TimeserieAnalyzerResult res = analyzer.analyze(adl, timeseries);
+            List<TimeserieOutlier> analyzerOutliers = res.getOutliers();
+            List<TimeserieInlier> analyzerInliers = res.getInliers();
+            if (analyzerOutliers.isEmpty() && analyzerInliers.isEmpty()) {
+                // Not active
+                return;
+            }
+            adl.activeAnalyzers.incrementAndGet();
+            outliers.addAll(analyzerOutliers);
+            inliers.addAll(analyzerInliers);
+        }
     }
 
 }

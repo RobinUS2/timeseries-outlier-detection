@@ -48,10 +48,11 @@ public class TestRunner {
 
         // Load
         AbstractDataLoader dl;
+        int numCores = Runtime.getRuntime().availableProcessors();
         for (String p : testDataFiles) {
             dl = new FileDataLoader(p);
             dl.load();
-            dl.analyze(analyzers);
+            dl.analyze(analyzers, numCores);
             ArrayList<ValidatedTimeserieOutlier> outliers = dl.validate();
             for (ValidatedTimeserieOutlier outlier : outliers) {
                 System.out.println(outlier.getDetails().toString());
